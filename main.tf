@@ -6,6 +6,13 @@ terraform {
       version = "~> 5.0"
     }
   }
+  
+  # S3 백엔드 설정 (팀 협업용)
+  backend "s3" {
+    bucket = "lastbyte-terraform-state"
+    key    = "terraform.tfstate"
+    region = "us-east-1"
+  }
 }
 
 provider "aws" {

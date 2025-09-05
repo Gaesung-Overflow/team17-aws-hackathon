@@ -1,4 +1,4 @@
-# 개성넘치는팀이름: [아이디어 이름]
+# 개성넘치는팀이름: 라스트바이트
 
 Amazon Q Developer Hackathon으로 구현하고자 하는 아이디어를 설명합니다.
 
@@ -28,8 +28,8 @@ Amazon Q Developer로 구현한 어플리케이션의 데모 영상을 입력합
 1. **AWS CLI 설정**
 
 ```bash
-aws configure
 # Access Key ID, Secret Access Key, Region(us-east-1) 설정
+aws configure
 ```
 
 2. **Terraform 설치**
@@ -49,12 +49,31 @@ pnpm install
 
 ### 배포 방법
 
+#### 최초 설정 (팀 리더만 실행)
+
+```bash
+# 1. 테라폼 상태 저장용 S3 버킷 생성
+aws s3 mb s3://lastbyte-terraform-state --region us-east-1
+
+# 2. 버킷 버전 관리 활성화
+aws s3api put-bucket-versioning \
+  --bucket lastbyte-terraform-state \
+  --versioning-configuration Status=Enabled
+```
+
 #### 자동 배포 (권장)
 
 ```bash
-# 전체 인프라 배포 및 웹사이트 업로드
+terraform init
+```
+
+최초 배포시 테라폼 세팅을 해줍니다.
+
+```bash
 pnpm run iac:publish
 ```
+
+전체 인프라 배포 및 웹사이트 업로드 진행
 
 #### 수동 배포
 
@@ -124,6 +143,15 @@ rm -f websocket_handler.zip
 - AWS 자격 증명 확인: `aws sts get-caller-identity`
 - Terraform 상태 확인: `terraform plan`
 - 로그 확인: CloudWatch Logs에서 Lambda 로그 확인
+
+**"이미 존재하는 리소스" 에러 시:**
+
+```bash
+# 기존 리소스 완전 삭제 후 재배포
+terraform destroy -auto-approve
+terraform init -reconfigure
+terraform apply -auto-approve
+```
 
 **WebSocket 연결 실패 시:**
 
