@@ -1,4 +1,10 @@
-# 개성넘치는팀이름: 라스트바이트
+<div align="center">
+  <img src="./docs/favicon.png" alt="LastByte Logo" width="200" height="200">
+  
+  # 개성넘치는팀이름: 라스트바이트
+  
+  *마지막 한 바이트의 주인공이 되어볼까요?* 🍕💾
+</div>
 
 Amazon Q Developer Hackathon으로 구현하고자 하는 아이디어를 설명합니다.
 
