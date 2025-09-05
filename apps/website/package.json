@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
     "lint:prettier": "prettier --check src",
     "lint:eslint": "eslint .",
     "lint:tsc": "tsc --noEmit",
@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "react-hot-toast": "^2.6.0"
   },
   "devDependencies": {
     "@types/react": "^19.1.10",
