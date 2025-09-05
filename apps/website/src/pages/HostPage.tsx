@@ -10,7 +10,7 @@ export const HostPage = () => {
 
   useEffect(() => {
     onMessage((data) => {
-      if (data.type === 'joinRoom') {
+      if (data.type === 'roomCreated') {
         navigate(
           `/game?roomId=${data.roomId}&isHost=true&roomName=${encodeURIComponent(data.roomName)}`,
         );

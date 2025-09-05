@@ -105,15 +105,15 @@ export const useWebSocket = () => {
   }, []);
 
   // 방 입장 후 메시지 브로드캐스트
-  const sendRoomMessage = useCallback(
-    (roomId: string, message: any) => {
-      // 1. 먼저 방에 입장
-      sendMessage({ type: 'joinRoom', roomId });
-      // 2. 바로 메시지 브로드캐스트
-      sendMessage(message);
-    },
-    [sendMessage],
-  );
+  // const sendRoomMessage = useCallback(
+  //   (roomId: string, message: any) => {
+  //     // 1. 먼저 방에 입장
+  //     sendMessage({ type: 'joinRoom', roomId });
+  //     // 2. 바로 메시지 브로드캐스트
+  //     sendMessage(message);
+  //   },
+  //   [sendMessage],
+  // );
 
   const createRoom = useCallback(
     (roomName: string) => {
@@ -130,7 +130,12 @@ export const useWebSocket = () => {
   const joinGame = useCallback(
     (roomId: string, playerName: string) => {
       const playerId = Math.random().toString(36).substring(2, 8);
-      sendRoomMessage(roomId, {
+      console.log('Sending joinGame message:', {
+        roomId,
+        playerId,
+        playerName,
+      });
+      sendMessage({
         type: 'joinGame',
         roomId,
         playerId,
@@ -138,7 +143,7 @@ export const useWebSocket = () => {
       });
       return playerId;
     },
-    [sendRoomMessage],
+    [sendMessage],
   );
 
   const sendPlayerAction = useCallback(

@@ -10,10 +10,15 @@ export const JoinPage = () => {
 
   useEffect(() => {
     onMessage((data) => {
-      if (data.type === 'joinRoom') {
+      console.log('JoinPage received message:', data);
+      if (data.type === 'joinGameSuccess') {
+        console.log('Join game success, navigating to player page');
         navigate(
           `/player?roomId=${roomId}&playerId=${data.playerId}&playerName=${encodeURIComponent(playerName)}`,
         );
+      } else if (data.type === 'joinGameError') {
+        console.error('Join game error:', data.error);
+        alert(`게임 참가 실패: ${data.error}`);
       }
     });
   }, [navigate, onMessage, roomId, playerName]);
