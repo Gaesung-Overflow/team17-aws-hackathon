@@ -8,6 +8,16 @@
 
 ## 배포 방법
 
+0. 패키지 설치
+
+```bash
+npm i
+```
+
+`packages/lambda`에서 `npm i`로 설치합니다.
+
+람다 전체를 `zip` 파일로 만들기 때문에 `pnpm` 의 파일 시스템을 우회해서 `node_modules`가 정상적으로 포함되도록 합니다.
+
 1. AWS CLI 설정
 
 ```bash
