@@ -5,6 +5,7 @@ import { useWebSocket } from '../hooks/useWebSocket';
 import '../App.css';
 import { ChatContainer } from '../chat/Container';
 import { Toast } from '../components/Toast';
+import { QRCodeDisplay } from '../components/QRCodeDisplay';
 import type { ExternalPlayer, GameCallbacks, PlayerCommand } from '../types';
 
 export const GamePage = () => {
@@ -180,21 +181,10 @@ export const GamePage = () => {
         >
           <h3>참가자 초대</h3>
           <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-            <div
-              style={{
-                width: '150px',
-                height: '150px',
-                border: '2px solid #007bff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'white',
-              }}
-            >
-              QR 코드
-              <br />
-              {roomId}
-            </div>
+            <QRCodeDisplay
+              value={`${window.location.origin}/join/${roomId}`}
+              size={150}
+            />
             <div>
               <p>
                 <strong>참가 방법:</strong>

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState, useCallback } from 'react';
 
-const WS_URL = 'wss://i9kpqjsmxa.execute-api.us-east-1.amazonaws.com/prod';
+const WS_URL = 'wss://mbizopkcbc.execute-api.us-east-1.amazonaws.com/prod';
 
 export const useWebSocket = () => {
   const ws = useRef<WebSocket | null>(null);
