@@ -19,6 +19,7 @@ export class GameEngine {
       eliminatedPlayers: initialState.eliminatedPlayers || [],
       rankings: initialState.rankings || [],
       gameStep: initialState.gameStep || 0,
+      playerNames: initialState.playerNames || initialState.players.map((_, i) => `Player ${i + 1}`),
     };
     this.playerMovements = initialState.players.map(
       (pos) => new SmoothMovement(pos),
@@ -177,7 +178,7 @@ export class GameEngine {
   } {
     const remainingPlayers =
       this.gameState.players.length - this.gameState.eliminatedPlayers.length;
-    const isOver = remainingPlayers <= 1;
+    const isOver = this.gameState.gameStep > 0 && remainingPlayers <= 1;
 
     let winner: number | undefined;
     if (isOver && remainingPlayers === 1) {
@@ -234,6 +235,8 @@ export class GameEngine {
           this.gameState.players.push(pos);
           this.playerEngines.push(new PlayerEngine());
           this.playerMovements.push(new SmoothMovement(pos));
+          const newPlayerIndex = this.gameState.players.length - 1;
+          this.gameState.playerNames?.push(`Player ${newPlayerIndex + 1}`);
           return;
         }
       }
@@ -250,6 +253,8 @@ export class GameEngine {
           this.gameState.players.push(pos);
           this.playerEngines.push(new PlayerEngine());
           this.playerMovements.push(new SmoothMovement(pos));
+          const newPlayerIndex = this.gameState.players.length - 1;
+          this.gameState.playerNames?.push(`Player ${newPlayerIndex + 1}`);
           return;
         }
       }
@@ -388,6 +393,7 @@ export class GameEngine {
       this.gameState.players.splice(index, 1);
       this.playerEngines.splice(index, 1);
       this.playerMovements.splice(index, 1);
+      this.gameState.playerNames?.splice(index, 1);
       // 제거된 플레이어 인덱스들을 업데이트
       this.gameState.eliminatedPlayers = this.gameState.eliminatedPlayers
         .map((i) => (i > index ? i - 1 : i))

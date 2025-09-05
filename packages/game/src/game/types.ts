@@ -43,8 +43,14 @@ export interface PlayerRanking {
   eliminatedAt?: number;
 }
 
+export interface Player {
+  position: Position;
+  name: string;
+}
+
 export interface GameState {
   players: Position[];
+  playerNames?: string[];
   ghost: Position;
   mapSize: { width: number; height: number };
   walls: Position[];

@@ -5,12 +5,14 @@ interface RankingBoardProps {
   rankings: PlayerRanking[];
   totalPlayers: number;
   remainingPlayers: number;
+  playerNames?: string[];
 }
 
 export const RankingBoard: React.FC<RankingBoardProps> = ({ 
   rankings, 
   totalPlayers, 
-  remainingPlayers 
+  remainingPlayers,
+  playerNames
 }) => {
   const playerEmojis = ['🔵', '🟢', '🟡', '🟣', '🟠', '🔴', '⚫', '⚪'];
   
@@ -41,34 +43,7 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({
       </div>
 
       <div style={{ borderTop: '1px solid #ddd', paddingTop: '10px' }}>
-        {sortedRankings.length === 0 ? (
-          <div style={{ textAlign: 'center', color: '#666' }}>
-            게임을 시작하세요!
-          </div>
-        ) : (
-          sortedRankings.map((ranking) => (
-            <div
-              key={ranking.playerId}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '5px 0',
-                borderBottom: '1px solid #eee'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>{playerEmojis[ranking.playerId % playerEmojis.length]}</span>
-                <span>플레이어 {ranking.playerId + 1}</span>
-              </div>
-              <div style={{ fontWeight: 'bold' }}>
-                {getRankEmoji(ranking.rank)}
-              </div>
-            </div>
-          ))
-        )}
-        
-        {/* 아직 살아있는 플레이어들 표시 */}
+        {/* 아직 살아있는 플레이어들 먼저 표시 */}
         {Array.from({ length: totalPlayers }, (_, i) => i)
           .filter(i => !rankings.some(r => r.playerId === i))
           .map(playerId => (
@@ -85,7 +60,7 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span>{playerEmojis[playerId % playerEmojis.length]}</span>
-                <span>플레이어 {playerId + 1}</span>
+                <span>{playerNames?.[playerId] || `Player ${playerId + 1}`}</span>
               </div>
               <div style={{ color: '#28a745', fontWeight: 'bold' }}>
                 생존 중
@@ -93,6 +68,36 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({
             </div>
           ))
         }
+        
+        {/* 순위가 매겨진 플레이어들 표시 */}
+        {sortedRankings.length === 0 ? (
+          totalPlayers === 0 && (
+            <div style={{ textAlign: 'center', color: '#666' }}>
+              게임을 시작하세요!
+            </div>
+          )
+        ) : (
+          sortedRankings.map((ranking) => (
+            <div
+              key={ranking.playerId}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '5px 0',
+                borderBottom: '1px solid #eee'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>{playerEmojis[ranking.playerId % playerEmojis.length]}</span>
+                <span>{playerNames?.[ranking.playerId] || `Player ${ranking.playerId + 1}`}</span>
+              </div>
+              <div style={{ fontWeight: 'bold' }}>
+                {getRankEmoji(ranking.rank)}
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

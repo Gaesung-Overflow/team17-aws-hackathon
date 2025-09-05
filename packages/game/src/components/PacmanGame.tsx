@@ -4,6 +4,7 @@ import { GameBoard } from './GameBoard';
 import { GameControls } from './GameControls';
 import { GameStats } from './GameStats';
 import { RankingBoard } from './RankingBoard';
+import { FloatingGameInfo } from './FloatingGameInfo';
 
 export const PacmanGame: React.FC = () => {
   const [gameEngine, setGameEngine] = useState<GameEngine>(() => {
@@ -15,6 +16,7 @@ export const PacmanGame: React.FC = () => {
         { x: 1, y: 11 },
         { x: 18, y: 1 },
       ],
+      playerNames: ['Alice', 'Bob', 'Charlie', 'Diana'],
       ghost: { x: 10, y: 6 },
       mapSize,
       walls,
@@ -88,6 +90,7 @@ export const PacmanGame: React.FC = () => {
         { x: 1, y: 11 },
         { x: 18, y: 1 },
       ],
+      playerNames: ['Alice', 'Bob', 'Charlie', 'Diana'],
       ghost: { x: 10, y: 6 },
       mapSize,
       walls,
@@ -175,11 +178,12 @@ export const PacmanGame: React.FC = () => {
           alignItems: 'flex-start',
           justifyContent: 'center',
           width: '100%',
-          maxWidth: '1200px',
+          maxWidth: '1200px'
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <GameBoard gameState={gameState} cellSize={25} />
+          
           {gameOverInfo.isOver && (
             <div
               style={{
@@ -188,6 +192,7 @@ export const PacmanGame: React.FC = () => {
                 borderRadius: '5px',
                 padding: '10px',
                 textAlign: 'center',
+                marginTop: '10px',
               }}
             >
               {gameOverInfo.winner !== undefined ? (
@@ -200,30 +205,22 @@ export const PacmanGame: React.FC = () => {
             </div>
           )}
         </div>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '20px',
-            width: '300px',
-            minWidth: '300px',
-            maxHeight: '80vh',
-            overflowY: 'auto',
-            flexShrink: 0,
-          }}
-        >
+
+        <div style={{ width: '300px' }}>
           <RankingBoard
             rankings={rankings}
             totalPlayers={gameState.players.length}
             remainingPlayers={gameOverInfo.remainingPlayers}
-          />
-          <GameStats
-            gameState={gameState}
-            gameOver={gameOverInfo}
-            step={step}
+            playerNames={gameState.playerNames}
           />
         </div>
       </div>
+
+      <FloatingGameInfo
+        gameState={gameState}
+        gameOver={gameOverInfo}
+        step={step}
+      />
     </div>
   );
 };

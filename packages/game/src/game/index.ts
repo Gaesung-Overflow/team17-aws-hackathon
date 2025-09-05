@@ -1,4 +1,5 @@
 export * from './types';
+export * from './external-types';
 export * from './utils';
 export * from './MovementEngine';
 export * from './PlayerEngine';

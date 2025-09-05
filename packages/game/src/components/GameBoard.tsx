@@ -8,9 +8,9 @@ interface GameBoardProps {
 
 export const GameBoard: React.FC<GameBoardProps> = ({
   gameState,
-  cellSize = 20,
+  cellSize = 50,
 }) => {
-  const { mapSize, walls, players, ghost } = gameState;
+  const { mapSize, walls, players, ghost, playerNames } = gameState;
 
   const isWall = (x: number, y: number): boolean => {
     return walls.some((wall) => wall.x === x && wall.y === y);
@@ -29,7 +29,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   };
 
   const getCellContent = (x: number, y: number) => {
-    if (isWall(x, y)) return '🧱';
+    if (isWall(x, y)) return '⬛';
 
     // 제거된 플레이어만 그리드에 표시 (생존 플레이어와 고스트는 따로 렌더링)
     const playerInfo = isPlayer(x, y);
@@ -107,15 +107,58 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       {/* 생존 플레이어들 부드럽게 렌더링 */}
       {players.map((player, index) => {
         if (gameState.eliminatedPlayers?.includes(index)) return null;
+        const playerName = playerNames?.[index] || `Player ${index + 1}`;
         return (
           <div key={`player-${index}`} style={getSmoothEntityStyle(player, 10)}>
             {playerEmojis[index % playerEmojis.length]}
+            <div
+              style={{
+                position: 'absolute',
+                top: -20,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                fontSize: 10,
+                fontWeight: 'bold',
+                color: '#333',
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                padding: '2px 4px',
+                borderRadius: '3px',
+                whiteSpace: 'nowrap',
+                border: '1px solid #ccc',
+                zIndex: 1000,
+                boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+              }}
+            >
+              {playerName}
+            </div>
           </div>
         );
       })}
 
       {/* 고스트 부드럽게 렌더링 */}
-      <div style={getSmoothEntityStyle(ghost, 11)}>👻</div>
+      <div style={getSmoothEntityStyle(ghost, 11)}>
+        👻
+        <div
+          style={{
+            position: 'absolute',
+            top: -20,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            fontSize: 10,
+            fontWeight: 'bold',
+            color: '#fff',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: '2px 4px',
+            borderRadius: '3px',
+            whiteSpace: 'nowrap',
+            border: '1px solid #666',
+            zIndex: 1000,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+          }}
+        >
+          Ghost
+        </div>
+      </div>
     </div>
   );
 };
