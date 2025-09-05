@@ -7,7 +7,7 @@ export const ChatContainer = () => {
     const input = document.getElementById('messageInput') as HTMLInputElement;
     const message = input.value;
     if (message && ws.current) {
-      ws.current.send(JSON.stringify({ message }));
+      ws.current.send(JSON.stringify({ message, type: 'chat' }));
       addMessage(`보낸 메시지: ${message}`);
       input.value = '';
     }
@@ -31,6 +31,12 @@ export const ChatContainer = () => {
     };
 
     ws.current.onmessage = (event) => {
+      if (event.data.type === 'system') {
+        // 방을 움직인다, 리디렉션을 한다 등등
+      } else if (event.data.type === 'chat') {
+        // 채팅 메시지
+        console.log('chat');
+      }
       const data = JSON.parse(event.data);
       addMessage(`받은 메시지: ${data.message}`);
     };
