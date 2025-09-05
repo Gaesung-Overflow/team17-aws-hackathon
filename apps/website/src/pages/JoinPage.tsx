@@ -1,21 +1,33 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 export const JoinPage = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
   const [playerName, setPlayerName] = useState('');
+  const { sendMessage, onMessage, isConnected } = useWebSocket();
+
+  useEffect(() => {
+    onMessage((data) => {
+      if (data.type === 'joinSuccess') {
+        navigate(
+          `/player?roomId=${roomId}&playerId=${data.playerId}&playerName=${encodeURIComponent(playerName)}`,
+        );
+      }
+    });
+  }, [navigate, onMessage, roomId, playerName]);
 
   const joinGame = () => {
-    if (!playerName.trim()) return;
+    if (!playerName.trim() || !isConnected || !roomId) return;
 
-    // TODO: WebSocket으로 게임 참가 요청
     const newPlayerId = `player_${Date.now()}`;
-
-    // 참가 완료 후 플레이어 페이지로 이동
-    navigate(
-      `/player?roomId=${roomId}&playerId=${newPlayerId}&playerName=${encodeURIComponent(playerName)}`,
-    );
+    sendMessage({
+      type: 'joinGame',
+      roomId,
+      playerId: newPlayerId,
+      playerName: playerName.trim(),
+    });
   };
 
   return (

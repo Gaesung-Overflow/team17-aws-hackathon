@@ -1,18 +1,32 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 export const HostPage = () => {
   const navigate = useNavigate();
   const [roomName, setRoomName] = useState('');
 
+  const { sendMessage, onMessage, isConnected } = useWebSocket();
+
+  useEffect(() => {
+    onMessage((data) => {
+      if (data.type === 'roomCreated') {
+        navigate(
+          `/game?roomId=${data.roomId}&isHost=true&roomName=${encodeURIComponent(data.roomName)}`,
+        );
+      }
+    });
+  }, [navigate, onMessage]);
+
   const createRoom = () => {
-    if (!roomName.trim()) return;
+    if (!roomName.trim() || !isConnected) return;
 
     const newRoomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-    // TODO: WebSocket으로 방 생성 요청
-    navigate(
-      `/game?roomId=${newRoomId}&isHost=true&roomName=${encodeURIComponent(roomName)}`,
-    );
+    sendMessage({
+      type: 'createRoom',
+      roomId: newRoomId,
+      roomName: roomName.trim(),
+    });
   };
 
   return (

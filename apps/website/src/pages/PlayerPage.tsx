@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 export const PlayerPage = () => {
   const [searchParams] = useSearchParams();
@@ -7,9 +8,26 @@ export const PlayerPage = () => {
   const playerId = searchParams.get('playerId');
   const playerName = searchParams.get('playerName');
 
-  const [gameState] = useState<
+  const { sendMessage, onMessage, isConnected } = useWebSocket();
+  const [gameState, setGameState] = useState<
     'waiting' | 'playing' | 'eliminated' | 'finished'
   >('waiting');
+
+  useEffect(() => {
+    onMessage((data) => {
+      if (data.type === 'gameStateUpdate') {
+        setGameState(data.state);
+      }
+    });
+  }, [onMessage]);
+
+  const sendAction = (action: string) => {
+    if (!isConnected) return;
+    sendMessage({
+      type: 'playerAction',
+      action,
+    });
+  };
 
   return (
     <div
@@ -30,6 +48,14 @@ export const PlayerPage = () => {
           <div>방: {roomId}</div>
           <div>플레이어: {playerName}</div>
           <div>ID: {playerId}</div>
+          <div
+            style={{
+              color: isConnected ? '#28a745' : '#dc3545',
+              marginTop: '5px',
+            }}
+          >
+            ● {isConnected ? '연결됨' : '연결 끊어짐'}
+          </div>
         </div>
       </div>
 
@@ -52,6 +78,7 @@ export const PlayerPage = () => {
             }}
           >
             <button
+              onClick={() => sendAction('up')}
               style={{
                 padding: '20px',
                 fontSize: '18px',
@@ -64,6 +91,7 @@ export const PlayerPage = () => {
               ⬆️ 위
             </button>
             <button
+              onClick={() => sendAction('down')}
               style={{
                 padding: '20px',
                 fontSize: '18px',
@@ -76,6 +104,7 @@ export const PlayerPage = () => {
               ⬇️ 아래
             </button>
             <button
+              onClick={() => sendAction('left')}
               style={{
                 padding: '20px',
                 fontSize: '18px',
@@ -88,6 +117,7 @@ export const PlayerPage = () => {
               ⬅️ 왼쪽
             </button>
             <button
+              onClick={() => sendAction('right')}
               style={{
                 padding: '20px',
                 fontSize: '18px',
@@ -103,6 +133,7 @@ export const PlayerPage = () => {
 
           <div style={{ marginTop: '30px' }}>
             <button
+              onClick={() => sendAction('boost')}
               style={{
                 padding: '15px 30px',
                 fontSize: '16px',

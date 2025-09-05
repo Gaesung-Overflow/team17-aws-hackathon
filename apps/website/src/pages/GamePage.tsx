@@ -1,6 +1,7 @@
 import { ExternalPacmanGame } from 'game';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useWebSocket } from '../hooks/useWebSocket';
 import '../App.css';
 import { ChatContainer } from '../chat/Container';
 import { Toast } from '../components/Toast';
@@ -11,6 +12,7 @@ export const GamePage = () => {
   const roomId = searchParams.get('roomId');
   const roomName = searchParams.get('roomName');
   const isHost = searchParams.get('isHost') === 'true';
+  const { sendMessage, onMessage, isConnected } = useWebSocket();
 
   const [players, setPlayers] = useState<ExternalPlayer[]>([]);
   const [commands, setCommands] = useState<PlayerCommand[]>([]);
@@ -26,6 +28,67 @@ export const GamePage = () => {
 
   const speedLevelToMs = (level: number) => 500 - (level - 1) * 50;
   const MAX_PLAYERS = 10;
+
+  // 웹소켓 메시지 처리
+  useEffect(() => {
+    if (!isHost) return;
+
+    onMessage((data) => {
+      if (data.type === 'playerJoined') {
+        // 새 플레이어를 게임에 추가
+        const newPlayer: ExternalPlayer = {
+          id: data.playerId,
+          name: data.playerName,
+          avatar: ['🚀', '🎉', '🎆', '⭐'][players.length % 4],
+        };
+
+        setPlayers((prev) => [...prev, newPlayer]);
+        setCommands((prev) => [
+          ...prev,
+          { playerId: data.playerId, type: 'add' },
+        ]);
+
+        setToast({
+          message: `${data.playerName}님이 참가했습니다!`,
+          type: 'success',
+        });
+      }
+
+      if (data.type === 'playerAction') {
+        // 플레이어 액션을 게임 명령으로 변환
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const actionMap: Record<string, any> = {
+          up: { type: 'move', direction: 'up' },
+          down: { type: 'move', direction: 'down' },
+          left: { type: 'move', direction: 'left' },
+          right: { type: 'move', direction: 'right' },
+          boost: { type: 'boost', duration: 3000, speedMultiplier: 2 },
+        };
+
+        const gameAction = actionMap[data.action];
+        if (gameAction) {
+          setCommands((prev) => [
+            ...prev,
+            {
+              playerId: data.playerId,
+              ...gameAction,
+            },
+          ]);
+        }
+      }
+    });
+  }, [onMessage, isHost, players.length]);
+
+  // 방장이 방에 입장 (웹소켓 연결 후)
+  useEffect(() => {
+    if (isHost && isConnected && roomId && roomName) {
+      sendMessage({
+        type: 'createRoom',
+        roomId,
+        roomName,
+      });
+    }
+  }, [isHost, isConnected, roomId, roomName, sendMessage]);
 
   const addPlayer = () => {
     if (players.length >= MAX_PLAYERS) {
@@ -91,6 +154,15 @@ export const GamePage = () => {
             </div>
             <div style={{ fontSize: '14px', color: '#666' }}>
               {isHost ? '방장' : '참가자'}
+            </div>
+            <div
+              style={{
+                fontSize: '12px',
+                color: isConnected ? '#28a745' : '#dc3545',
+                marginTop: '5px',
+              }}
+            >
+              ● {isConnected ? '연결됨' : '연결 끊어짐'}
             </div>
           </div>
         )}
@@ -231,15 +303,66 @@ export const GamePage = () => {
             border: '1px solid #ccc',
             padding: '15px',
             borderRadius: '8px',
+            minWidth: '300px',
           }}
         >
-          <h3>플레이어 관리</h3>
-          <button onClick={addPlayer} style={{ marginBottom: '10px' }}>
-            플레이어 추가
-          </button>
-          <div>
-            참가자: {players.length}/{MAX_PLAYERS}명
+          <h3>
+            참가자 목록 ({players.length}/{MAX_PLAYERS}명)
+          </h3>
+
+          {isHost && (
+            <button
+              onClick={addPlayer}
+              style={{ marginBottom: '15px', padding: '8px 16px' }}
+            >
+              테스트 플레이어 추가
+            </button>
+          )}
+
+          <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+            {players.length === 0 ? (
+              <p style={{ color: '#666', fontStyle: 'italic' }}>
+                참가자를 기다리는 중...
+              </p>
+            ) : (
+              players.map((player, index) => (
+                <div
+                  key={player.id}
+                  style={{
+                    padding: '8px 12px',
+                    marginBottom: '5px',
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '5px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                  }}
+                >
+                  <span style={{ fontSize: '20px' }}>{player.avatar}</span>
+                  <span style={{ fontWeight: 'bold' }}>{player.name}</span>
+                  <span style={{ fontSize: '12px', color: '#666' }}>
+                    #{index + 1}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
+
+          {isHost && players.length > 0 && (
+            <button
+              style={{
+                marginTop: '15px',
+                padding: '10px 20px',
+                backgroundColor: '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                width: '100%',
+              }}
+            >
+              게임 시작
+            </button>
+          )}
         </div>
       </div>
 
