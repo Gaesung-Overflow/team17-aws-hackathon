@@ -1,36 +1,42 @@
 import React from 'react';
-import { GameState } from '../game/types';
+import { GameState, Position } from '../game/types';
 
 interface GameBoardProps {
   gameState: GameState;
   cellSize?: number;
 }
 
-export const GameBoard: React.FC<GameBoardProps> = ({ gameState, cellSize = 20 }) => {
+export const GameBoard: React.FC<GameBoardProps> = ({
+  gameState,
+  cellSize = 20,
+}) => {
   const { mapSize, walls, players, ghost } = gameState;
 
   const isWall = (x: number, y: number): boolean => {
-    return walls.some(wall => wall.x === x && wall.y === y);
+    return walls.some((wall) => wall.x === x && wall.y === y);
   };
 
-  const isPlayer = (x: number, y: number): number => {
-    return players.findIndex(player => player.x === x && player.y === y);
-  };
-
-  const isGhost = (x: number, y: number): boolean => {
-    return ghost.x === x && ghost.y === y;
+  const isPlayer = (
+    x: number,
+    y: number,
+  ): { index: number; isEliminated: boolean } => {
+    const index = players.findIndex(
+      (player) => player.x === x && player.y === y,
+    );
+    const isEliminated =
+      index !== -1 && gameState.eliminatedPlayers?.includes(index);
+    return { index, isEliminated };
   };
 
   const getCellContent = (x: number, y: number) => {
     if (isWall(x, y)) return '🧱';
-    if (isGhost(x, y)) return '👻';
-    
-    const playerIndex = isPlayer(x, y);
-    if (playerIndex !== -1) {
-      const playerEmojis = ['🔵', '🟢', '🟡', '🟣', '🟠'];
-      return playerEmojis[playerIndex % playerEmojis.length];
+
+    // 제거된 플레이어만 그리드에 표시 (생존 플레이어와 고스트는 따로 렌더링)
+    const playerInfo = isPlayer(x, y);
+    if (playerInfo.index !== -1 && playerInfo.isEliminated) {
+      return '💀';
     }
-    
+
     return '';
   };
 
@@ -42,22 +48,52 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, cellSize = 20 }
       alignItems: 'center',
       justifyContent: 'center',
       fontSize: cellSize * 0.7,
-      border: '1px solid #ddd'
+      border: '1px solid #ddd',
+      position: 'relative' as const,
+      boxSizing: 'content-box' as const,
     };
 
     if (isWall(x, y)) {
       return { ...baseStyle, backgroundColor: '#333' };
     }
-    
-    return { ...baseStyle, backgroundColor: '#f9f9f9' };
+
+    const playerInfo = isPlayer(x, y);
+    if (playerInfo.index !== -1 && playerInfo.isEliminated) {
+      return { ...baseStyle, backgroundColor: '#ffebee', zIndex: 1 };
+    }
+
+    return { ...baseStyle, backgroundColor: '#f9f9f9', zIndex: 2 };
   };
 
+  const getSmoothEntityStyle = (pos: Position, zIndex: number = 10) => {
+    return {
+      position: 'absolute' as const,
+      left: pos.x * (cellSize + 2),
+      top: pos.y * (cellSize + 2),
+      width: cellSize,
+      height: cellSize,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: cellSize * 0.7,
+      zIndex,
+      transition: 'none',
+      pointerEvents: 'none' as const,
+    };
+  };
+
+  const playerEmojis = ['🔵', '🟢', '🟡', '🟣', '🟠', '🔴', '⚫', '⚪'];
+
   return (
-    <div style={{ 
-      display: 'inline-block', 
-      border: '2px solid #000',
-      backgroundColor: '#000'
-    }}>
+    <div
+      style={{
+        display: 'inline-block',
+        border: '2px solid #000',
+        backgroundColor: '#000',
+        position: 'relative',
+      }}
+    >
+      {/* 그리드 배경 */}
       {Array.from({ length: mapSize.height }, (_, y) => (
         <div key={y} style={{ display: 'flex' }}>
           {Array.from({ length: mapSize.width }, (_, x) => (
@@ -67,6 +103,19 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, cellSize = 20 }
           ))}
         </div>
       ))}
+
+      {/* 생존 플레이어들 부드럽게 렌더링 */}
+      {players.map((player, index) => {
+        if (gameState.eliminatedPlayers?.includes(index)) return null;
+        return (
+          <div key={`player-${index}`} style={getSmoothEntityStyle(player, 10)}>
+            {playerEmojis[index % playerEmojis.length]}
+          </div>
+        );
+      })}
+
+      {/* 고스트 부드럽게 렌더링 */}
+      <div style={getSmoothEntityStyle(ghost, 11)}>👻</div>
     </div>
   );
 };

@@ -10,7 +10,7 @@ export class PlayerEngine extends MovementEngine {
     ghostPos?: Position,
     otherPlayers?: Position[]
   ): Direction {
-    const validDirections = getValidDirections(currentPos, mapSize, walls);
+    const validDirections = getValidDirections(currentPos, mapSize, walls, otherPlayers);
     
     if (validDirections.length === 0) {
       return { x: 0, y: 0 };
@@ -44,18 +44,27 @@ export class PlayerEngine extends MovementEngine {
         weights.set(dir, (weights.get(dir) || 1) * 0.5);
       }
       
-      // 다른 플레이어와 겹치지 않도록
+      // 다른 플레이어와 겹치지 않도록 (완전 차단)
       if (otherPlayers?.some(p => p.x === newPos.x && p.y === newPos.y)) {
-        weights.set(dir, (weights.get(dir) || 1) * 0.2);
+        weights.set(dir, 0); // 완전히 차단
       }
     });
+    
+    // 모든 방향이 차단된 경우 제자리에 머물기
+    const hasValidMove = Array.from(weights.values()).some(weight => weight > 0);
+    if (!hasValidMove) {
+      return { x: 0, y: 0 };
+    }
 
-    // 랜덤 요소 (25% 확률)
+    // 랜덤 요소 (25% 확률) - 유효한 방향만 선택
     if (Math.random() < 0.25) {
-      const randomDir = validDirections[Math.floor(Math.random() * validDirections.length)];
-      this.lastDirection = randomDir;
-      this.updateHistory(currentPos);
-      return randomDir;
+      const validWeightedDirections = validDirections.filter(dir => (weights.get(dir) || 0) > 0);
+      if (validWeightedDirections.length > 0) {
+        const randomDir = validWeightedDirections[Math.floor(Math.random() * validWeightedDirections.length)];
+        this.lastDirection = randomDir;
+        this.updateHistory(currentPos);
+        return randomDir;
+      }
     }
 
     const selectedDirection = this.selectWeightedDirection(weights);

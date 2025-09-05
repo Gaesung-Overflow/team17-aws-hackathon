@@ -9,6 +9,7 @@ export const isValidPosition = (
   pos: Position,
   mapSize: { width: number; height: number },
   walls: Position[],
+  occupiedPositions?: Position[]
 ): boolean => {
   if (
     pos.x < 0 ||
@@ -18,17 +19,29 @@ export const isValidPosition = (
   ) {
     return false;
   }
-  return !walls.some((wall) => wall.x === pos.x && wall.y === pos.y);
+  
+  // 벽 충돌 검사
+  if (walls.some((wall) => wall.x === pos.x && wall.y === pos.y)) {
+    return false;
+  }
+  
+  // 다른 플레이어 위치 충돌 검사
+  if (occupiedPositions?.some((occupied) => occupied.x === pos.x && occupied.y === pos.y)) {
+    return false;
+  }
+  
+  return true;
 };
 
 export const getValidDirections = (
   pos: Position,
   mapSize: { width: number; height: number },
   walls: Position[],
+  occupiedPositions?: Position[]
 ): Direction[] => {
   return Object.values(DIRECTIONS).filter((dir) => {
     const newPos = { x: pos.x + dir.x, y: pos.y + dir.y };
-    return isValidPosition(newPos, mapSize, walls);
+    return isValidPosition(newPos, mapSize, walls, occupiedPositions);
   });
 };
 
