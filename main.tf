@@ -107,6 +107,19 @@ resource "aws_cloudfront_distribution" "website" {
   viewer_certificate {
     cloudfront_default_certificate = true
   }
+
+  # SPA 라우팅을 위한 커스텀 에러 페이지
+  custom_error_response {
+    error_code         = 404
+    response_code      = 200
+    response_page_path = "/index.html"
+  }
+
+  custom_error_response {
+    error_code         = 403
+    response_code      = 200
+    response_page_path = "/index.html"
+  }
 }
 
 # DynamoDB 테이블 (WebSocket 연결 관리)
