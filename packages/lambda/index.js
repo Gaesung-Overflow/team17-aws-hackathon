@@ -64,137 +64,7 @@ exports.handler = async (event) => {
           endpoint: `https://${domainName}/${stage}`,
         });
 
-        if (body.type === 'createRoom') {
-          await dynamodb.send(
-            new PutCommand({
-              TableName: tableName,
-              Item: {
-                connectionId,
-                roomId: body.roomId,
-                userType: 'host',
-                roomName: body.roomName,
-              },
-            }),
-          );
-
-          await apiGateway.send(
-            new PostToConnectionCommand({
-              ConnectionId: connectionId,
-              Data: JSON.stringify({
-                type: 'roomCreated',
-                roomId: body.roomId,
-                roomName: body.roomName,
-              }),
-            }),
-          );
-
-          return { statusCode: 200 };
-        }
-
-        if (body.type === 'joinGame') {
-          await dynamodb.send(
-            new PutCommand({
-              TableName: tableName,
-              Item: {
-                connectionId,
-                roomId: body.roomId,
-                userType: 'player',
-                playerId: body.playerId,
-                playerName: body.playerName,
-              },
-            }),
-          );
-
-          // 방장에게 새 플레이어 알림
-          const roomMembers = await dynamodb.send(
-            new ScanCommand({
-              TableName: tableName,
-              FilterExpression: 'roomId = :roomId AND userType = :userType',
-              ExpressionAttributeValues: {
-                ':roomId': body.roomId,
-                ':userType': 'host',
-              },
-            }),
-          );
-
-          for (const member of roomMembers.Items) {
-            try {
-              await apiGateway.send(
-                new PostToConnectionCommand({
-                  ConnectionId: member.connectionId,
-                  Data: JSON.stringify({
-                    type: 'playerJoined',
-                    playerId: body.playerId,
-                    playerName: body.playerName,
-                  }),
-                }),
-              );
-            } catch (err) {
-              console.log('Send error:', err);
-            }
-          }
-
-          // 플레이어에게 참가 완료 알림
-          await apiGateway.send(
-            new PostToConnectionCommand({
-              ConnectionId: connectionId,
-              Data: JSON.stringify({
-                type: 'joinSuccess',
-                playerId: body.playerId,
-              }),
-            }),
-          );
-
-          return { statusCode: 200 };
-        }
-
-        if (body.type === 'playerAction') {
-          // 현재 플레이어 정보 조회
-          const currentUser = await dynamodb.send(
-            new ScanCommand({
-              TableName: tableName,
-              FilterExpression: 'connectionId = :id',
-              ExpressionAttributeValues: { ':id': connectionId },
-            }),
-          );
-
-          const user = currentUser.Items[0];
-          if (!user || user.userType !== 'player') {
-            return { statusCode: 400 };
-          }
-
-          // 같은 방의 방장에게 액션 전달
-          const hostMembers = await dynamodb.send(
-            new ScanCommand({
-              TableName: tableName,
-              FilterExpression: 'roomId = :roomId AND userType = :userType',
-              ExpressionAttributeValues: {
-                ':roomId': user.roomId,
-                ':userType': 'host',
-              },
-            }),
-          );
-
-          for (const host of hostMembers.Items) {
-            try {
-              await apiGateway.send(
-                new PostToConnectionCommand({
-                  ConnectionId: host.connectionId,
-                  Data: JSON.stringify({
-                    type: 'playerAction',
-                    playerId: user.playerId,
-                    action: body.action,
-                  }),
-                }),
-              );
-            } catch (err) {
-              console.log('Send error:', err);
-            }
-          }
-
-          return { statusCode: 200 };
-        }
-
+        // joinRoom으로 방 입장 처리
         if (body.type === 'joinRoom') {
           await dynamodb.send(
             new PutCommand({
@@ -202,20 +72,10 @@ exports.handler = async (event) => {
               Item: { connectionId, roomId: body.roomId },
             }),
           );
-
-          await apiGateway.send(
-            new PostToConnectionCommand({
-              ConnectionId: connectionId,
-              Data: JSON.stringify({
-                type: 'system',
-                message: `방 ${body.roomId}에 입장했습니다`,
-              }),
-            }),
-          );
-
-          return { statusCode: 200 };
+          console.log(`User ${connectionId} joined room ${body.roomId}`);
         }
 
+        // 현재 사용자의 방 정보 조회
         const currentUser = await dynamodb.send(
           new ScanCommand({
             TableName: tableName,
@@ -226,9 +86,13 @@ exports.handler = async (event) => {
 
         const userRoomId = currentUser.Items[0]?.roomId;
         if (!userRoomId) {
+          console.log(`User ${connectionId} not in any room`);
           return { statusCode: 200 };
         }
+        
+        console.log(`Broadcasting message to room ${userRoomId}:`, body);
 
+        // 같은 방의 모든 사용자에게 메시지 브로드캐스트
         const roomMembers = await dynamodb.send(
           new ScanCommand({
             TableName: tableName,
@@ -238,24 +102,22 @@ exports.handler = async (event) => {
         );
 
         const promises = roomMembers.Items.map(async ({ connectionId: id }) => {
-          if (id !== connectionId) {
-            try {
-              await apiGateway.send(
-                new PostToConnectionCommand({
-                  ConnectionId: id,
-                  Data: JSON.stringify(body),
+          try {
+            await apiGateway.send(
+              new PostToConnectionCommand({
+                ConnectionId: id,
+                Data: JSON.stringify(body),
+              }),
+            );
+          } catch (err) {
+            console.log('Send error:', err);
+            if (err.$metadata?.httpStatusCode === 410) {
+              await dynamodb.send(
+                new DeleteCommand({
+                  TableName: tableName,
+                  Key: { connectionId: id },
                 }),
               );
-            } catch (err) {
-              console.log('Send error:', err);
-              if (err.$metadata?.httpStatusCode === 410) {
-                await dynamodb.send(
-                  new DeleteCommand({
-                    TableName: tableName,
-                    Key: { connectionId: id },
-                  }),
-                );
-              }
             }
           }
         });

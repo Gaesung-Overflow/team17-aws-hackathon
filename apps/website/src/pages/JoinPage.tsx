@@ -6,11 +6,11 @@ export const JoinPage = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
   const [playerName, setPlayerName] = useState('');
-  const { sendMessage, onMessage, isConnected } = useWebSocket();
+  const { joinGame, onMessage, isConnected } = useWebSocket();
 
   useEffect(() => {
     onMessage((data) => {
-      if (data.type === 'joinSuccess') {
+      if (data.type === 'joinRoom') {
         navigate(
           `/player?roomId=${roomId}&playerId=${data.playerId}&playerName=${encodeURIComponent(playerName)}`,
         );
@@ -18,16 +18,10 @@ export const JoinPage = () => {
     });
   }, [navigate, onMessage, roomId, playerName]);
 
-  const joinGame = () => {
+  const handleJoinGame = () => {
     if (!playerName.trim() || !isConnected || !roomId) return;
-
-    const newPlayerId = `player_${Date.now()}`;
-    sendMessage({
-      type: 'joinGame',
-      roomId,
-      playerId: newPlayerId,
-      playerName: playerName.trim(),
-    });
+    joinGame(roomId, playerName.trim());
+    // 서버 응답을 기다림 (useEffect에서 처리)
   };
 
   return (
@@ -53,7 +47,7 @@ export const JoinPage = () => {
         />
 
         <button
-          onClick={joinGame}
+          onClick={handleJoinGame}
           disabled={!playerName.trim()}
           style={{
             width: '100%',

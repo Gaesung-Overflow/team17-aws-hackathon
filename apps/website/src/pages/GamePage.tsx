@@ -32,18 +32,25 @@ export const GamePage = () => {
 
   // 웹소켓 메시지 처리
   useEffect(() => {
-    if (!isHost) return;
-
     onMessage((data) => {
+      console.log('🎮 GamePage received message:', data);
+
+      // 모든 메시지 타입 로깅
+      if (data.type) {
+        console.log(`📨 Message type: ${data.type}`);
+      }
+
       if (data.type === 'playerJoined') {
         // 새 플레이어를 게임에 추가
-        const newPlayer: ExternalPlayer = {
-          id: data.playerId,
-          name: data.playerName,
-          avatar: ['🚀', '🎉', '🎆', '⭐'][players.length % 4],
-        };
+        setPlayers((prev) => {
+          const newPlayer: ExternalPlayer = {
+            id: data.playerId,
+            name: data.playerName,
+            avatar: ['🚀', '🎉', '🎆', '⭐'][prev.length % 4],
+          };
+          return [...prev, newPlayer];
+        });
 
-        setPlayers((prev) => [...prev, newPlayer]);
         setCommands((prev) => [
           ...prev,
           { playerId: data.playerId, type: 'add' },
@@ -77,19 +84,17 @@ export const GamePage = () => {
           ]);
         }
       }
-    });
-  }, [onMessage, isHost, players.length]);
 
-  // 방장이 방에 입장 (웹소켓 연결 후)
-  useEffect(() => {
-    if (isHost && isConnected && roomId && roomName) {
-      sendMessage({
-        type: 'createRoom',
-        roomId,
-        roomName,
-      });
-    }
-  }, [isHost, isConnected, roomId, roomName, sendMessage]);
+      if (data.type === 'testResponse') {
+        setToast({
+          message: data.message,
+          type: 'success',
+        });
+      }
+    });
+  }, [onMessage, isHost]);
+
+  // GamePage에서는 이미 방이 생성된 상태로 오므로 createRoom 호출 제거
 
   const addPlayer = () => {
     if (players.length >= MAX_PLAYERS) {
@@ -165,6 +170,24 @@ export const GamePage = () => {
             >
               ● {isConnected ? '연결됨' : '연결 끊어짐'}
             </div>
+            {isConnected && (
+              <button
+                onClick={() =>
+                  sendMessage({ type: 'test', message: 'Hello from GamePage' })
+                }
+                style={{
+                  marginTop: '5px',
+                  padding: '5px 10px',
+                  fontSize: '12px',
+                  backgroundColor: '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '3px',
+                }}
+              >
+                테스트 메시지
+              </button>
+            )}
           </div>
         )}
       </div>

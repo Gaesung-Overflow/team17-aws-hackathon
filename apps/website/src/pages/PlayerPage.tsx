@@ -8,7 +8,7 @@ export const PlayerPage = () => {
   const playerId = searchParams.get('playerId');
   const playerName = searchParams.get('playerName');
 
-  const { sendMessage, onMessage, isConnected } = useWebSocket();
+  const { sendPlayerAction, onMessage, isConnected } = useWebSocket();
   const [gameState, setGameState] = useState<
     'waiting' | 'playing' | 'eliminated' | 'finished'
   >('waiting');
@@ -22,11 +22,8 @@ export const PlayerPage = () => {
   }, [onMessage]);
 
   const sendAction = (action: string) => {
-    if (!isConnected) return;
-    sendMessage({
-      type: 'playerAction',
-      action,
-    });
+    if (!isConnected || !roomId) return;
+    sendPlayerAction(roomId, action);
   };
 
   return (

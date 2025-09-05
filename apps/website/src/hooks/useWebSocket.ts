@@ -29,11 +29,15 @@ export const useWebSocket = () => {
     };
 
     ws.current.onclose = (event) => {
-      console.log('WebSocket 연결 종료:', event.code, event.reason);
+      console.log('WebSocket 연결 종료:', {
+        code: event.code,
+        reason: event.reason,
+        wasClean: event.wasClean,
+      });
       setIsConnected(false);
 
-      // 3초 후 재연결 시도
-      if (!reconnectTimeoutRef.current) {
+      // 정상 종료가 아닌 경우만 재연결
+      if (!event.wasClean && !reconnectTimeoutRef.current) {
         reconnectTimeoutRef.current = setTimeout(() => {
           console.log('재연결 시도 중...');
           connect();
@@ -42,7 +46,11 @@ export const useWebSocket = () => {
     };
 
     ws.current.onerror = (error) => {
-      console.error('WebSocket 오류:', error);
+      console.error('WebSocket 오류:', {
+        error,
+        readyState: ws.current?.readyState,
+        url: WS_URL,
+      });
     };
 
     ws.current.onmessage = (event) => {
@@ -67,18 +75,85 @@ export const useWebSocket = () => {
     };
   }, [connect]);
 
-  const sendMessage = useCallback((message: any) => {
-    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      console.log('WebSocket 메시지 전송:', message);
-      ws.current.send(JSON.stringify(message));
-    } else {
-      console.warn('WebSocket 연결되지 않음. 메시지 전송 실패:', message);
-    }
-  }, []);
+  const sendMessage = useCallback(
+    (message: any) => {
+      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+        console.log('WebSocket 메시지 전송:', message);
+        try {
+          ws.current.send(JSON.stringify(message));
+        } catch (error) {
+          console.error('WebSocket 메시지 전송 오류:', error);
+        }
+      } else {
+        console.warn(
+          'WebSocket 연결되지 않음. readyState:',
+          ws.current?.readyState,
+          '메시지:',
+          message,
+        );
+        // 연결이 끊어졌으면 재연결 시도
+        if (ws.current?.readyState === WebSocket.CLOSED) {
+          connect();
+        }
+      }
+    },
+    [connect],
+  );
 
   const onMessage = useCallback((callback: (data: any) => void) => {
     messageHandlerRef.current = callback;
   }, []);
 
-  return { sendMessage, onMessage, isConnected };
+  // 방 입장 후 메시지 브로드캐스트
+  const sendRoomMessage = useCallback(
+    (roomId: string, message: any) => {
+      // 1. 먼저 방에 입장
+      sendMessage({ type: 'joinRoom', roomId });
+      // 2. 바로 메시지 브로드캐스트
+      sendMessage(message);
+    },
+    [sendMessage],
+  );
+
+  const createRoom = useCallback(
+    (roomName: string) => {
+      const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+      // 먼저 방에 입장
+      sendMessage({ type: 'joinRoom', roomId });
+      // 그 다음 createRoom 메시지 브로드캐스트
+      sendMessage({ type: 'createRoom', roomId, roomName });
+      return roomId;
+    },
+    [sendMessage],
+  );
+
+  const joinGame = useCallback(
+    (roomId: string, playerName: string) => {
+      const playerId = Math.random().toString(36).substring(2, 8);
+      sendRoomMessage(roomId, {
+        type: 'joinGame',
+        roomId,
+        playerId,
+        playerName,
+      });
+      return playerId;
+    },
+    [sendRoomMessage],
+  );
+
+  const sendPlayerAction = useCallback(
+    (roomId: string, action: string) => {
+      sendMessage({ type: 'playerAction', action });
+    },
+    [sendMessage],
+  );
+
+  return {
+    sendMessage,
+    onMessage,
+    isConnected,
+    createRoom,
+    joinGame,
+    sendPlayerAction,
+  };
 };

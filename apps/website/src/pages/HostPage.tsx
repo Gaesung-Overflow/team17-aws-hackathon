@@ -6,11 +6,11 @@ export const HostPage = () => {
   const navigate = useNavigate();
   const [roomName, setRoomName] = useState('');
 
-  const { sendMessage, onMessage, isConnected } = useWebSocket();
+  const { createRoom, onMessage, isConnected } = useWebSocket();
 
   useEffect(() => {
     onMessage((data) => {
-      if (data.type === 'roomCreated') {
+      if (data.type === 'joinRoom') {
         navigate(
           `/game?roomId=${data.roomId}&isHost=true&roomName=${encodeURIComponent(data.roomName)}`,
         );
@@ -18,15 +18,10 @@ export const HostPage = () => {
     });
   }, [navigate, onMessage]);
 
-  const createRoom = () => {
+  const handleCreateRoom = () => {
     if (!roomName.trim() || !isConnected) return;
-
-    const newRoomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-    sendMessage({
-      type: 'createRoom',
-      roomId: newRoomId,
-      roomName: roomName.trim(),
-    });
+    createRoom(roomName.trim());
+    // 서버 응답을 기다림 (useEffect에서 처리)
   };
 
   return (
@@ -62,7 +57,7 @@ export const HostPage = () => {
         />
 
         <button
-          onClick={createRoom}
+          onClick={handleCreateRoom}
           disabled={!roomName.trim()}
           style={{
             padding: '15px 30px',
