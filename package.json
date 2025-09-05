@@ -10,7 +10,8 @@
     "preinstall": "npx only-allow pnpm",
     "lint": "pnpm web lint",
     "prepare": "husky",
-    "iac": "./scripts/iac.sh"
+    "iac:publish": "./scripts/iac.sh",
+    "iac:destroy": "./scripts/iac-cleanup.sh"
   },
   "repository": {
     "type": "git",

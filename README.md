@@ -1,4 +1,4 @@
-# [개성넘치는팀이름] : [아이디어 이름]
+# 개성넘치는팀이름: [아이디어 이름]
 
 Amazon Q Developer Hackathon으로 구현하고자 하는 아이디어를 설명합니다.
 
@@ -17,9 +17,119 @@ Amazon Q Developer로 구현한 어플리케이션의 데모 영상을 입력합
 
 ## 리소스 배포하기
 
-해당 코드를 AWS 상에 배포하기 위한 방법을 설명합니다. 인프라를 배포했을 경우 출력되는 AWS 아키텍처도 함께 포함하며, 리소스를 삭제하는 방안도 함께 작성합니다.
+### AWS 아키텍처
 
-QR 생성 -> QR 읽어서 방 진입
+![AWS Architecture](./docs/architecture.svg)
+
+- IAM > 사용자 계정 > 보안 자격 증명 > 엑세스 키 설정
+
+### 사전 준비
+
+1. **AWS CLI 설정**
+
+```bash
+aws configure
+# Access Key ID, Secret Access Key, Region(us-east-1) 설정
+```
+
+2. **Terraform 설치**
+
+```bash
+# macOS
+brew install terraform
+
+# 또는 공식 사이트에서 다운로드
+```
+
+3. **의존성 설치**
+
+```bash
+pnpm install
+```
+
+### 배포 방법
+
+#### 자동 배포 (권장)
+
+```bash
+# 전체 인프라 배포 및 웹사이트 업로드
+pnpm run iac:publish
+```
+
+#### 수동 배포
+
+```bash
+# 1. Terraform 초기화
+terraform init
+
+# 2. 인프라 배포
+terraform apply
+
+# 3. 웹사이트 빌드
+pnpm web build
+
+# 4. S3에 업로드
+aws s3 cp apps/website/dist/ s3://$(terraform output -raw s3_bucket_name)/ --recursive
+```
+
+### 배포 완료 후 출력 정보
+
+배포가 성공하면 다음 정보들이 출력됩니다:
+
+- **Website URL**: `https://[cloudfront-domain].cloudfront.net`
+- **WebSocket URL**: `wss://[api-id].execute-api.us-east-1.amazonaws.com/prod`
+- **S3 Bucket Name**: `my-static-website-[random-suffix]`
+
+### 주요 AWS 서비스
+
+| 서비스          | 용도                    | 비용 모델             |
+| --------------- | ----------------------- | --------------------- |
+| **S3**          | React 앱 정적 파일 저장 | 저장 용량 + 요청 수   |
+| **CloudFront**  | CDN, HTTPS 제공         | 데이터 전송량         |
+| **API Gateway** | WebSocket 엔드포인트    | 연결 시간 + 메시지 수 |
+| **Lambda**      | 실시간 메시지 처리      | 실행 시간 + 요청 수   |
+| **DynamoDB**    | 연결 상태 관리          | 읽기/쓰기 요청 수     |
+
+### 리소스 삭제
+
+#### 자동 삭제 (권장)
+
+```bash
+pnpm run iac:destroy
+```
+
+#### 수동 삭제
+
+```bash
+# 1. S3 버킷 내용 삭제
+aws s3 rm s3://$(terraform output -raw s3_bucket_name) --recursive
+
+# 2. Terraform 리소스 삭제
+terraform destroy
+
+# 3. 생성된 파일 정리
+rm -f websocket_handler.zip
+```
+
+### 주의사항
+
+- CloudFront 배포는 삭제 시 15-20분 소요될 수 있습니다
+- DynamoDB 테이블은 즉시 삭제되지 않을 수 있습니다
+- 모든 리소스가 삭제되었는지 AWS 콘솔에서 확인하세요
+
+### 트러블슈팅
+
+**배포 실패 시:**
+
+- AWS 자격 증명 확인: `aws sts get-caller-identity`
+- Terraform 상태 확인: `terraform plan`
+- 로그 확인: CloudWatch Logs에서 Lambda 로그 확인
+
+**WebSocket 연결 실패 시:**
+
+- 브라우저 개발자 도구에서 네트워크 탭 확인
+- WebSocket URL이 올바른지 확인
+- CORS 설정 확인
 
 ## 프로젝트 기대 효과 및 예상 사용 사례
 

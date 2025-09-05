@@ -31,7 +31,7 @@ export const ChatContainer = () => {
 
   useEffect(() => {
     ws.current = new WebSocket(
-      'wss://lczr545025.execute-api.us-east-1.amazonaws.com/prod',
+      'wss://i9kpqjsmxa.execute-api.us-east-1.amazonaws.com/prod',
     );
 
     ws.current.onopen = () => {

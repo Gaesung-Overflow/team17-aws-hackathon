@@ -1,0 +1,73 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="400" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#232f3e">AWS 아키텍처 다이어그램</text>
+  
+  <!-- User -->
+  <circle cx="100" cy="120" r="30" fill="#4285f4"/>
+  <text x="100" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">사용자</text>
+  
+  <!-- CloudFront -->
+  <rect x="250" y="80" width="120" height="80" rx="10" fill="#ff9900"/>
+  <text x="310" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">CloudFront</text>
+  <text x="310" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">CDN</text>
+  <text x="310" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">HTTPS</text>
+  
+  <!-- S3 -->
+  <rect x="450" y="80" width="120" height="80" rx="10" fill="#569a31"/>
+  <text x="510" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">S3 Bucket</text>
+  <text x="510" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Static Website</text>
+  <text x="510" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">React App</text>
+  
+  <!-- API Gateway -->
+  <rect x="250" y="220" width="120" height="80" rx="10" fill="#ff4b4b"/>
+  <text x="310" y="250" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">API Gateway</text>
+  <text x="310" y="265" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">WebSocket</text>
+  <text x="310" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">실시간 통신</text>
+  
+  <!-- Lambda -->
+  <rect x="450" y="220" width="120" height="80" rx="10" fill="#ff9900"/>
+  <text x="510" y="250" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Lambda</text>
+  <text x="510" y="265" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">WebSocket</text>
+  <text x="510" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Handler</text>
+  
+  <!-- DynamoDB -->
+  <rect x="450" y="360" width="120" height="80" rx="10" fill="#3f48cc"/>
+  <text x="510" y="390" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">DynamoDB</text>
+  <text x="510" y="405" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Connection</text>
+  <text x="510" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Management</text>
+  
+  <!-- Arrows -->
+  <!-- User to CloudFront -->
+  <line x1="130" y1="120" x2="250" y2="120" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <text x="190" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">HTTPS</text>
+  
+  <!-- CloudFront to S3 -->
+  <line x1="370" y1="120" x2="450" y2="120" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- User to API Gateway -->
+  <line x1="130" y1="140" x2="250" y2="240" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <text x="180" y="200" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">WebSocket</text>
+  
+  <!-- API Gateway to Lambda -->
+  <line x1="370" y1="260" x2="450" y2="260" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Lambda to DynamoDB -->
+  <line x1="510" y1="300" x2="510" y2="360" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333"/>
+    </marker>
+  </defs>
+  
+  <!-- Data Flow Labels -->
+  <text x="100" y="500" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#232f3e">데이터 흐름:</text>
+  <text x="100" y="520" font-family="Arial, sans-serif" font-size="12" fill="#333">1. 사용자가 CloudFront를 통해 React 앱 접근</text>
+  <text x="100" y="540" font-family="Arial, sans-serif" font-size="12" fill="#333">2. WebSocket으로 실시간 채팅 연결</text>
+  <text x="100" y="560" font-family="Arial, sans-serif" font-size="12" fill="#333">3. Lambda가 메시지 처리 및 방 관리</text>
+  <text x="100" y="580" font-family="Arial, sans-serif" font-size="12" fill="#333">4. DynamoDB에 연결 상태 저장</text>
+</svg>
