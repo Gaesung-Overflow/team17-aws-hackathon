@@ -1,12 +1,22 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export const ChatContainer = () => {
   const ws = useRef<WebSocket | null>(null);
 
+  const [currentRoom, setCurrentRoom] = useState<string>('');
+  const [roomInput, setRoomInput] = useState<string>('');
+
+  const joinRoom = () => {
+    if (roomInput && ws.current) {
+      ws.current.send(JSON.stringify({ type: 'joinRoom', roomId: roomInput }));
+      setCurrentRoom(roomInput);
+    }
+  };
+
   const sendMessage = () => {
     const input = document.getElementById('messageInput') as HTMLInputElement;
     const message = input.value;
-    if (message && ws.current) {
+    if (message && ws.current && currentRoom) {
       ws.current.send(JSON.stringify({ message, type: 'chat' }));
       addMessage(`보낸 메시지: ${message}`);
       input.value = '';
@@ -20,7 +30,6 @@ export const ChatContainer = () => {
   };
 
   useEffect(() => {
-    // WebSocket URL을 여기에 입력하세요 (terraform apply 후 출력됨)
     ws.current = new WebSocket(
       'wss://lczr545025.execute-api.us-east-1.amazonaws.com/prod',
     );
@@ -31,14 +40,13 @@ export const ChatContainer = () => {
     };
 
     ws.current.onmessage = (event) => {
-      if (event.data.type === 'system') {
-        // 방을 움직인다, 리디렉션을 한다 등등
-      } else if (event.data.type === 'chat') {
-        // 채팅 메시지
-        console.log('chat');
-      }
       const data = JSON.parse(event.data);
-      addMessage(`받은 메시지: ${data.message}`);
+
+      if (data.type === 'system') {
+        addMessage(`시스템: ${data.message}`);
+      } else if (data.type === 'chat') {
+        addMessage(`받은 메시지: ${data.message}`);
+      }
     };
 
     ws.current.onclose = () => {
@@ -60,9 +68,42 @@ export const ChatContainer = () => {
   return (
     <>
       <h1>실시간 채팅 테스트</h1>
-      <div id="messages"></div>
-      <input type="text" id="messageInput" placeholder="메시지 입력" />
-      <button onClick={sendMessage}>전송</button>
+
+      <div style={{ marginBottom: '20px' }}>
+        <input
+          type="text"
+          value={roomInput}
+          onChange={(e) => setRoomInput(e.target.value)}
+          placeholder="방 ID 입력"
+        />
+        <button onClick={joinRoom}>방 입장</button>
+        {currentRoom && (
+          <span style={{ marginLeft: '10px' }}>현재 방: {currentRoom}</span>
+        )}
+      </div>
+
+      <div
+        id="messages"
+        style={{
+          height: '300px',
+          overflow: 'auto',
+          border: '1px solid #ccc',
+          padding: '10px',
+          marginBottom: '10px',
+        }}
+      ></div>
+
+      <div>
+        <input
+          type="text"
+          id="messageInput"
+          placeholder="메시지 입력"
+          disabled={!currentRoom}
+        />
+        <button onClick={sendMessage} disabled={!currentRoom}>
+          전송
+        </button>
+      </div>
     </>
   );
 };
