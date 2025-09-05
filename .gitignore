@@ -22,3 +22,32 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Terraform state files and backups
+*.tfstate
+*.tfstate.backup
+*.tfstate.*.backup
+*.tfstate.lock.info
+.terraform.tfstate.lock.info
+
+# Terraform provider and module downloads
+.terraform/
+
+# Terraform variable files (especially those with sensitive information)
+*.tfvars
+*.tfvars.json
+
+# Terraform CLI configuration files
+.terraformrc
+terraform.rc
+
+# Saved plan files
+*.tfplan*
+
+# Lambda deployment packages
+*.zip
+
+# AWS credentials (never commit these)
+.aws/
+*.pem
+*.key

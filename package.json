@@ -9,7 +9,8 @@
     "web": "pnpm --filter website",
     "preinstall": "npx only-allow pnpm",
     "lint": "pnpm web lint",
-    "prepare": "husky"
+    "prepare": "husky",
+    "iac": "./scripts/iac.sh"
   },
   "repository": {
     "type": "git",
