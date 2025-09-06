@@ -46,6 +46,31 @@ export const PlayerPage = () => {
     };
   }, [onMessage]);
 
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue =
+        '게임에서 나가시겠습니까? 진행 중인 게임이 있을 수 있습니다.';
+    };
+
+    const handlePopState = () => {
+      if (
+        !confirm('게임에서 나가시겠습니까? 진행 중인 게임이 있을 수 있습니다.')
+      ) {
+        window.history.pushState(null, '', window.location.href);
+      }
+    };
+
+    window.history.pushState(null, '', window.location.href);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
   const sendAction = (action: string) => {
     if (!isConnected || !roomId) return;
     sendPlayerAction(roomId, action, initialEmoji);
