@@ -338,7 +338,7 @@ export const GamePage = () => {
         {isHost && roomId && (
           <div
             className="retro-panel retro-qr-panel"
-            style={{ flexGrow: 1, width: 200, maxHeight: 700 }}
+            style={{ flexGrow: 1, width: 300, maxHeight: 700 }}
           >
             <div
               style={{
@@ -348,10 +348,14 @@ export const GamePage = () => {
                 alignItems: 'center',
               }}
             >
-              <QRCodeDisplay
-                value={`${window.location.origin}/join/${roomId}`}
-                size={150}
-              />
+              <div style={{ width: '150px', textAlign: 'center' }}>
+                {!gameStarted && (
+                  <QRCodeDisplay
+                    value={`${window.location.origin}/join/${roomId}`}
+                    size={150}
+                  />
+                )}
+              </div>
               <div
                 style={{
                   display: 'flex',
@@ -359,13 +363,21 @@ export const GamePage = () => {
                   gap: '15px',
                 }}
               >
-                <h2 className="retro-qr-title">JOIN NOW!</h2>
-                <p>1. QR 코드 스캔</p>
-                <p style={{ wordBreak: 'break-all' }}>
-                  2. 또는 직접 접속:
-                  <br />
-                  {window.location.origin}/join/{roomId}
-                </p>
+                <h2 className="retro-qr-title">
+                  {gameStarted ? 'FIGHT!' : 'JOIN NOW!'}
+                </h2>
+                {gameStarted ? (
+                  <>게임이 시작되었습니다!</>
+                ) : (
+                  <>
+                    <p>1. QR 코드 스캔</p>
+                    <p style={{ wordBreak: 'break-all' }}>
+                      2. 또는 직접 접속:
+                      <br />
+                      {window.location.origin}/join/{roomId}
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           </div>
