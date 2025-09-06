@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { EmojiPicker } from '../components/EmojiPicker';
 import { useWebSocket } from '../hooks/useWebSocket';
+import { ArcadeBackground } from '../components/ArcadeBackground';
+import { GlitchText } from '../components/GlitchText';
+import { PulsingButton } from '../components/PulsingButton';
 
 export const JoinPage = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -43,6 +46,7 @@ export const JoinPage = () => {
 
   return (
     <div
+      className="fade-in"
       style={{
         padding: '40px 20px',
         textAlign: 'center',
@@ -52,12 +56,19 @@ export const JoinPage = () => {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
+        position: 'relative',
       }}
     >
-      <div style={{ marginBottom: '40px' }}>
-        <h1 className="retro-title neon-pulse">JOIN GAME</h1>
+      <ArcadeBackground />
+      <div className="slide-in-left" style={{ marginBottom: '40px' }}>
+        <GlitchText
+          className="retro-title neon-pulse"
+          style={{ fontSize: '2.5rem', marginBottom: '20px' }}
+        >
+          JOIN GAME
+        </GlitchText>
         <h2
-          className="neon-glow-green retro-font"
+          className="neon-glow-green retro-font slide-in-right"
           style={{ fontSize: '1.2rem', marginTop: '20px' }}
         >
           ROOM: {roomId}
@@ -110,31 +121,25 @@ export const JoinPage = () => {
           />
         </div>
 
-        <button
+        <PulsingButton
           onClick={handleJoinGame}
           disabled={!playerName.trim() || !isConnected || clicked}
-          className="retro-button"
           style={{
             fontSize: '18px',
-            padding: '15px 30px',
             width: '100%',
             maxWidth: '300px',
-            opacity: !playerName.trim() || !isConnected || clicked ? 0.5 : 1,
-            cursor:
-              !playerName.trim() || !isConnected || clicked
-                ? 'not-allowed'
-                : 'pointer',
           }}
         >
-          JOIN GAME
-        </button>
+          {clicked ? 'JOINING...' : 'JOIN GAME'}
+        </PulsingButton>
 
         <div
-          className="retro-text"
+          className="retro-text slide-in-right"
           style={{ marginTop: '15px', fontSize: '0.9rem' }}
         >
           연결 상태: {isConnected ? '🟢 ONLINE' : '🔴 OFFLINE'}
         </div>
+        {clicked && <div className="arcade-spinner" />}
       </div>
     </div>
   );

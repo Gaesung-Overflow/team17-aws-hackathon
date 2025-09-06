@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWebSocket } from '../hooks/useWebSocket';
+import { ArcadeBackground } from '../components/ArcadeBackground';
+import { GlitchText } from '../components/GlitchText';
+import { PulsingButton } from '../components/PulsingButton';
 
 export const HostPage = () => {
   const navigate = useNavigate();
@@ -30,6 +33,7 @@ export const HostPage = () => {
 
   return (
     <div
+      className="fade-in"
       style={{
         padding: '40px 20px',
         textAlign: 'center',
@@ -39,10 +43,17 @@ export const HostPage = () => {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
+        position: 'relative',
       }}
     >
-      <div style={{ marginBottom: '40px' }}>
-        <h1 className="retro-title neon-pulse">CREATE ROOM</h1>
+      <ArcadeBackground />
+      <div className="slide-in-left" style={{ marginBottom: '40px' }}>
+        <GlitchText
+          className="retro-title neon-pulse"
+          style={{ fontSize: '2.5rem', marginBottom: '20px' }}
+        >
+          CREATE ROOM
+        </GlitchText>
         <p
           className="retro-text"
           style={{ marginTop: '15px', fontSize: '1rem' }}
@@ -85,29 +96,25 @@ export const HostPage = () => {
           />
         </div>
 
-        <button
+        <PulsingButton
           onClick={handleCreateRoom}
           disabled={!roomName.trim() || !isConnected || clicked}
-          className="retro-button"
           style={{
             fontSize: '18px',
-            padding: '15px 30px',
-            opacity: !roomName.trim() || !isConnected || clicked ? 0.5 : 1,
-            cursor:
-              !roomName.trim() || !isConnected || clicked
-                ? 'not-allowed'
-                : 'pointer',
+            width: '100%',
+            maxWidth: '300px',
           }}
         >
-          START GAME
-        </button>
+          {clicked ? 'CREATING...' : 'START GAME'}
+        </PulsingButton>
 
         <div
-          className="retro-text"
+          className="retro-text slide-in-right"
           style={{ marginTop: '15px', fontSize: '0.9rem' }}
         >
           연결 상태: {isConnected ? '🟢 ONLINE' : '🔴 OFFLINE'}
         </div>
+        {clicked && <div className="arcade-spinner" />}
       </div>
     </div>
   );

@@ -3,6 +3,9 @@ import { useSearchParams } from 'react-router-dom';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { EmojiAnimation } from '../components/EmojiAnimation';
 import { VictoryAnimation } from '../components/VictoryAnimation';
+import { ArcadeBackground } from '../components/ArcadeBackground';
+import { GlitchText } from '../components/GlitchText';
+import { PulsingButton } from '../components/PulsingButton';
 
 export const PlayerPage = () => {
   const [searchParams] = useSearchParams();
@@ -50,6 +53,7 @@ export const PlayerPage = () => {
 
   return (
     <div
+      className="fade-in"
       style={{
         padding: '20px',
         textAlign: 'center',
@@ -59,23 +63,29 @@ export const PlayerPage = () => {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
+        position: 'relative',
       }}
     >
-      <div style={{ marginBottom: '30px' }}>
+      <ArcadeBackground />
+      <div className="slide-in-left" style={{ marginBottom: '30px' }}>
         <div
           className="neon-glow-green"
-          style={{ fontSize: '2rem', marginBottom: '10px' }}
+          style={{
+            fontSize: '2rem',
+            marginBottom: '10px',
+            animation: 'bounce 2s infinite',
+          }}
         >
           🎮
         </div>
-        <h2
+        <GlitchText
           className="neon-glow-green retro-font"
           style={{ fontSize: '1.2rem', marginBottom: '15px' }}
         >
           CONTROLLER
-        </h2>
+        </GlitchText>
         <div
-          className="retro-text"
+          className="retro-text slide-in-right"
           style={{ fontSize: '14px', marginTop: '10px' }}
         >
           <div>ROOM: {roomId}</div>
@@ -88,13 +98,13 @@ export const PlayerPage = () => {
       </div>
 
       {gameState === 'waiting' && (
-        <div>
-          <h3
+        <div className="slide-in-right">
+          <GlitchText
             className="neon-glow-cyan retro-font"
             style={{ fontSize: '1.1rem', marginBottom: '20px' }}
           >
             WAITING FOR GAME...
-          </h3>
+          </GlitchText>
           <p className="retro-text" style={{ marginBottom: '10px' }}>
             방장이 게임을 시작할 때까지
           </p>
@@ -102,63 +112,59 @@ export const PlayerPage = () => {
             기다려주세요
           </p>
 
-          <button
+          <PulsingButton
             onClick={() => sendAction('cheer')}
-            className="retro-button"
             style={{
               fontSize: '16px',
-              padding: '15px 30px',
               width: '100%',
             }}
           >
             CHEER {initialEmoji}
-          </button>
+          </PulsingButton>
         </div>
       )}
 
       {gameState === 'running' && (
-        <div>
-          <h3
+        <div className="slide-in-right">
+          <GlitchText
             className="neon-glow-green retro-font"
             style={{ fontSize: '1.1rem', marginBottom: '30px' }}
           >
             GAME RUNNING
-          </h3>
+          </GlitchText>
 
-          <button
+          <PulsingButton
             onClick={() => sendAction('cheer')}
-            className="retro-button"
             style={{
               fontSize: '16px',
-              padding: '15px 30px',
               width: '100%',
             }}
           >
             CHEER {initialEmoji}
-          </button>
+          </PulsingButton>
         </div>
       )}
 
       {gameState === 'eliminated' && (
-        <div>
-          <h3
+        <div className="slide-in-right">
+          <GlitchText
             className="neon-glow-red retro-font"
             style={{ fontSize: '1.1rem', marginBottom: '20px' }}
           >
             😵 ELIMINATED!
-          </h3>
+          </GlitchText>
           <p className="retro-text">다음 게임을 기다려주세요</p>
         </div>
       )}
 
       {gameState === 'finished' && (
-        <div>
-          <h3
+        <div className="slide-in-right">
+          <GlitchText
             className="neon-glow-yellow retro-font"
             style={{ fontSize: '1.1rem', marginBottom: '20px' }}
           >
             🎉 GAME FINISHED!
-          </h3>
+          </GlitchText>
           <p className="retro-text" style={{ marginBottom: '20px' }}>
             새로운 게임을 기다려주세요
           </p>
