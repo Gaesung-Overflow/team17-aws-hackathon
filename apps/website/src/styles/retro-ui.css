@@ -1,0 +1,353 @@
+/* 웹사이트 UI용 레트로 스타일 */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root {
+  /* 네온 색상 팔레트 */
+  --arcade-bg: #000000;
+  --neon-green: #00ff00;
+  --neon-pink: #ff00ff;
+  --neon-cyan: #00ffff;
+  --neon-yellow: #ffff00;
+  --neon-red: #ff0040;
+  --neon-blue: #0080ff;
+  --neon-white: #ffffff;
+  --neon-orange: #ff8000;
+}
+
+/* 레트로 게임 페이지 배경 */
+.retro-game-page {
+  min-height: 100vh;
+  color: var(--neon-white);
+}
+
+/* 레트로 제목 */
+.retro-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 24px;
+  color: var(--neon-cyan);
+  text-shadow:
+    0 0 10px var(--neon-cyan),
+    0 0 20px var(--neon-cyan),
+    0 0 30px var(--neon-cyan);
+  animation: title-glow 2s ease-in-out infinite alternate;
+  text-transform: uppercase;
+}
+
+@keyframes title-glow {
+  0% {
+    text-shadow:
+      0 0 10px var(--neon-cyan),
+      0 0 20px var(--neon-cyan),
+      0 0 30px var(--neon-cyan);
+  }
+  100% {
+    text-shadow:
+      0 0 15px var(--neon-cyan),
+      0 0 25px var(--neon-cyan),
+      0 0 35px var(--neon-cyan);
+  }
+}
+
+/* 레트로 패널 */
+.retro-panel {
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid var(--neon-green);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow:
+    0 0 20px rgba(0, 255, 0, 0.3),
+    inset 0 0 20px rgba(0, 255, 0, 0.05);
+  position: relative;
+}
+
+.retro-panel::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(
+    45deg,
+    var(--neon-green),
+    var(--neon-cyan),
+    var(--neon-pink),
+    var(--neon-green)
+  );
+  z-index: -1;
+  border-radius: 10px;
+  animation: panel-border-glow 4s ease-in-out infinite;
+}
+
+@keyframes panel-border-glow {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* 레트로 버튼 */
+.retro-button {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  background: linear-gradient(45deg, var(--neon-pink), var(--neon-cyan));
+  border: 2px solid var(--neon-white);
+  color: var(--arcade-bg);
+  padding: 12px 20px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 4px;
+  box-shadow:
+    0 0 20px rgba(255, 0, 255, 0.5),
+    inset 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.retro-button:hover {
+  background: linear-gradient(45deg, var(--neon-cyan), var(--neon-yellow));
+  box-shadow:
+    0 0 30px rgba(0, 255, 255, 0.8),
+    inset 0 0 15px rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.retro-button:active {
+  transform: translateY(0);
+  box-shadow:
+    0 0 15px rgba(255, 0, 255, 0.3),
+    inset 0 0 5px rgba(255, 255, 255, 0.1);
+}
+
+.retro-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 레트로 입력 필드 */
+.retro-input,
+.retro-select {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  background: rgba(0, 0, 0, 0.9);
+  border: 2px solid var(--neon-green);
+  color: var(--neon-green);
+  padding: 8px 12px;
+  border-radius: 4px;
+  text-shadow: 0 0 5px var(--neon-green);
+  box-shadow:
+    0 0 10px rgba(0, 255, 0, 0.3),
+    inset 0 0 10px rgba(0, 255, 0, 0.1);
+}
+
+.retro-input:focus,
+.retro-select:focus {
+  outline: none;
+  border-color: var(--neon-cyan);
+  color: var(--neon-cyan);
+  text-shadow: 0 0 5px var(--neon-cyan);
+  box-shadow:
+    0 0 20px rgba(0, 255, 255, 0.5),
+    inset 0 0 10px rgba(0, 255, 255, 0.1);
+}
+
+/* 레트로 슬라이더 */
+.retro-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--neon-red),
+    var(--neon-yellow),
+    var(--neon-green)
+  );
+  border-radius: 3px;
+  outline: none;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+.retro-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: var(--neon-white);
+  border: 2px solid var(--neon-cyan);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
+}
+
+.retro-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: var(--neon-white);
+  border: 2px solid var(--neon-cyan);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
+}
+
+/* 플레이어 목록 */
+.retro-player-list {
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid var(--neon-cyan);
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.retro-player-item {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  padding: 8px 12px;
+  margin-bottom: 4px;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid var(--neon-cyan);
+  border-radius: 4px;
+  color: var(--neon-white);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+}
+
+.retro-player-item:hover {
+  background: rgba(0, 255, 255, 0.2);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+/* 연결 상태 표시 */
+.retro-connection-status {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.retro-connection-status.connected {
+  color: var(--neon-green);
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid var(--neon-green);
+  text-shadow: 0 0 5px var(--neon-green);
+}
+
+.retro-connection-status.disconnected {
+  color: var(--neon-red);
+  background: rgba(255, 0, 64, 0.1);
+  border: 1px solid var(--neon-red);
+  text-shadow: 0 0 5px var(--neon-red);
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0.3;
+  }
+}
+
+/* QR 코드 패널 */
+.retro-qr-panel {
+  background: rgba(0, 0, 0, 0.9);
+  border: 2px solid var(--neon-pink);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  box-shadow:
+    0 0 20px rgba(255, 0, 255, 0.3),
+    inset 0 0 20px rgba(255, 0, 255, 0.05);
+}
+
+.retro-qr-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  color: var(--neon-pink);
+  text-shadow: 0 0 10px var(--neon-pink);
+  margin-bottom: 15px;
+  text-transform: uppercase;
+}
+
+/* 게임 설정 라벨 */
+.retro-setting-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 5px var(--neon-yellow);
+  text-transform: uppercase;
+}
+
+/* 한글 텍스트용 큰 폰트 */
+.retro-korean-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+}
+
+.retro-korean-small {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+}
+
+.retro-korean-medium {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+}
+
+/* 룸 ID 표시 */
+.retro-room-id {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  color: var(--neon-cyan);
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid var(--neon-cyan);
+  padding: 8px 12px;
+  border-radius: 4px;
+  text-shadow: 0 0 5px var(--neon-cyan);
+  display: inline-block;
+}
+
+/* 스크롤바 스타일링 */
+.retro-player-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.retro-player-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+}
+
+.retro-player-list::-webkit-scrollbar-thumb {
+  background: var(--neon-cyan);
+  border-radius: 4px;
+  box-shadow: 0 0 10px var(--neon-cyan);
+}
+
+.retro-player-list::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-pink);
+  box-shadow: 0 0 15px var(--neon-pink);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .retro-title {
+    font-size: 16px;
+  }
+
+  .retro-button {
+    font-size: 8px;
+    padding: 10px 16px;
+  }
+
+  .retro-qr-title {
+    font-size: 10px;
+  }
+}

@@ -27,4 +27,10 @@ export interface GameCallbacks {
   onGameEnd?: (rankings: Array<{ playerId: string; rank: number }>) => void;
   onGameStateChange?: (state: 'running' | 'stopped' | 'ended') => void;
   onGameReset?: () => void;
+  onConfigChange?: (config: {
+    playerSpeedLevel: number;
+    ghostSpeedLevel: number;
+    ghostLevel: number;
+    selectedMapId: string;
+  }) => void;
 }

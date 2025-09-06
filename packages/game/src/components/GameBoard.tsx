@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GameState, Position } from '../game/types';
 import { ExternalPlayer } from '../game/external-types';
+import '../styles/retro-arcade.css';
 
 interface GameBoardProps {
   gameState: GameState;
@@ -42,7 +43,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           gameState.gameStep > 0,
       }
     : { isOver: false };
-  const shouldFlash = elapsedSeconds >= 30 && !gameOverInfo.isOver;
+  const shouldFlash = elapsedSeconds >= 20 && !gameOverInfo.isOver;
 
   useEffect(() => {
     if (!shouldFlash) {
@@ -104,13 +105,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       alignItems: 'center',
       justifyContent: 'center',
       fontSize: cellSize * 0.7,
-      border: '1px solid #ddd',
       position: 'relative' as const,
       boxSizing: 'content-box' as const,
     };
 
+    let className = 'arcade-cell';
+
     if (isWall(x, y)) {
-      return { ...baseStyle, backgroundColor: '#333' };
+      className += ' wall';
     }
 
     // 제거된 플레이어의 마지막 위치 표시
@@ -126,11 +128,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     });
 
     if (eliminatedPlayer) {
-      return { ...baseStyle, backgroundColor: '#ffebee', zIndex: 3 };
+      className += ' eliminated';
     }
 
-    const bgColor = shouldFlash && isWarningFlash ? '#ffcccc' : '#f9f9f9';
-    return { ...baseStyle, backgroundColor: bgColor, zIndex: 2 };
+    if (shouldFlash && isWarningFlash && !isWall(x, y)) {
+      className += ' warning-flash';
+    }
+
+    return { ...baseStyle, className };
   };
 
   const getSmoothEntityStyle = (pos: Position, zIndex: number = 10) => {
@@ -228,22 +233,19 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   }, [gameOverInfo.isOver, isRunning]);
 
   return (
-    <div
-      style={{
-        display: 'inline-block',
-        border: '2px solid #000',
-        backgroundColor: '#000',
-        position: 'relative',
-      }}
-    >
+    <div className="arcade-game-board arcade-crt-effect arcade-scanlines">
       {/* 그리드 배경 */}
       {Array.from({ length: mapSize.height }, (_, y) => (
         <div key={y} style={{ display: 'flex' }}>
-          {Array.from({ length: mapSize.width }, (_, x) => (
-            <div key={`${x}-${y}`} style={getCellStyle(x, y)}>
-              {getCellContent(x, y)}
-            </div>
-          ))}
+          {Array.from({ length: mapSize.width }, (_, x) => {
+            const cellStyle = getCellStyle(x, y);
+            const { className, ...style } = cellStyle;
+            return (
+              <div key={`${x}-${y}`} className={className} style={style}>
+                {getCellContent(x, y)}
+              </div>
+            );
+          })}
         </div>
       ))}
 
@@ -268,21 +270,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           <div key={`player-${index}`} style={getSmoothEntityStyle(player, 10)}>
             <span style={{ fontSize: cellSize * 0.7 }}>{emoji}</span>
             <div
+              className="arcade-player-name"
               style={{
                 position: 'absolute',
                 top: -20,
                 left: '50%',
                 transform: 'translateX(-50%)',
-                fontSize: 10,
-                fontWeight: 'bold',
-                color: '#333',
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                padding: '2px 4px',
-                borderRadius: '3px',
                 whiteSpace: 'nowrap',
-                border: '1px solid #ccc',
                 zIndex: 1000,
-                boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
               }}
             >
               {playerName}
@@ -295,49 +290,35 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       <div style={getSmoothEntityStyle(ghost, 11)}>
         👻
         <div
+          className="arcade-ghost-name"
           style={{
             position: 'absolute',
             top: -20,
             left: '50%',
             transform: 'translateX(-50%)',
-            fontSize: 10,
-            fontWeight: 'bold',
-            color: '#fff',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            padding: '2px 4px',
-            borderRadius: '3px',
             whiteSpace: 'nowrap',
-            border: '1px solid #666',
             zIndex: 1000,
-            boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
           }}
         >
-          Ghost
+          GHOST
         </div>
         {/* 고스트 말풍선 */}
         {ghostMessage && (
           <div
+            className="arcade-ghost-speech"
             style={{
               position: 'absolute',
               top: -50,
               left: '50%',
               transform: 'translateX(-50%)',
-              fontSize: 12,
-              fontWeight: 'bold',
-              color: '#333',
-              backgroundColor: '#fff',
-              padding: '6px 10px',
-              borderRadius: '15px',
               whiteSpace: 'nowrap',
-              border: '2px solid #ff4444',
               zIndex: 1001,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-              animation: 'bounce 0.3s ease-out',
             }}
           >
             {ghostMessage}
             {/* 말풍선 꼬리 */}
             <div
+              className="arcade-speech-tail"
               style={{
                 position: 'absolute',
                 bottom: -8,
@@ -347,10 +328,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 height: 0,
                 borderLeft: '8px solid transparent',
                 borderRight: '8px solid transparent',
-                borderTop: '8px solid #ff4444',
               }}
             />
             <div
+              className="arcade-speech-tail-inner"
               style={{
                 position: 'absolute',
                 bottom: -6,
@@ -360,7 +341,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 height: 0,
                 borderLeft: '6px solid transparent',
                 borderRight: '6px solid transparent',
-                borderTop: '6px solid #fff',
               }}
             />
           </div>

@@ -177,17 +177,17 @@ export class GameEngine {
 
   private updateGamePhase(): void {
     if (!this.gameState.gameStartTime) return;
-    
+
     const elapsedTime = Date.now() - this.gameState.gameStartTime;
     const elapsedSeconds = elapsedTime / 1000;
-    
+
     let newPhase = 0;
     if (elapsedSeconds >= 60) {
       newPhase = 2;
-    } else if (elapsedSeconds >= 30) {
+    } else if (elapsedSeconds >= 20) {
       newPhase = 1;
     }
-    
+
     if (newPhase !== this.gameState.currentPhase) {
       this.gameState.currentPhase = newPhase;
       this.ghostMovement.setSpeed(this.baseGhostSpeed + newPhase);

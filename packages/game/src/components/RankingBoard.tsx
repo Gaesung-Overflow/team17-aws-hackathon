@@ -1,6 +1,7 @@
 import React from 'react';
 import { PlayerRanking } from '../game/types';
 import { ExternalPlayer } from '../game';
+import '../styles/retro-arcade.css';
 
 interface RankingBoardProps {
   externalPlayers?: ExternalPlayer[];
@@ -38,21 +39,13 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({
   console.log(externalPlayers);
 
   return (
-    <div
-      style={{
-        border: '2px solid #333',
-        borderRadius: '8px',
-        padding: '15px',
-        backgroundColor: '#f8f9fa',
-        width: '100%',
-      }}
-    >
-      <h3 style={{ margin: '0 0 15px 0', textAlign: 'center' }}>
-        🏆 순위 보드
+    <div className="arcade-info-panel" style={{ width: '100%' }}>
+      <h3 className="retro-font neon-glow-green" style={{ margin: '0 0 15px 0', textAlign: 'center', textTransform: 'uppercase' }}>
+        RANKING
       </h3>
 
-      <div style={{ marginBottom: '10px', fontSize: '14px' }}>
-        생존자: {remainingPlayers}명 / {totalPlayers}명
+      <div className="retro-font neon-glow-cyan" style={{ marginBottom: '10px', fontSize: '10px', textAlign: 'center' }}>
+        ALIVE: {remainingPlayers} / {totalPlayers}
       </div>
 
       <div style={{ borderTop: '1px solid #ddd', paddingTop: '10px' }}>
@@ -64,13 +57,18 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({
             return (
               <div
                 key={`alive-${playerId}`}
+                className="retro-font"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '5px 0',
-                  borderBottom: '1px solid #eee',
-                  backgroundColor: '#e8f5e8',
+                  padding: '8px',
+                  marginBottom: '4px',
+                  backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                  border: '1px solid var(--neon-green)',
+                  borderRadius: '4px',
+                  color: 'var(--neon-green)',
+                  textShadow: '0 0 5px var(--neon-green)'
                 }}
               >
                 <div
@@ -86,7 +84,7 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({
                       `Player ${playerId + 1}`}
                   </span>
                 </div>
-                <div style={{ color: '#28a745', fontWeight: 'bold' }}>생존</div>
+                <div className="neon-glow-green" style={{ fontWeight: 'bold' }}>ALIVE</div>
               </div>
             );
           })}
@@ -94,21 +92,28 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({
         {/* 순위가 매겨진 플레이어들 표시 */}
         {sortedRankings.length === 0
           ? totalPlayers === 0 && (
-              <div style={{ textAlign: 'center', color: '#666' }}>
-                게임을 시작하세요!
+              <div className="retro-font arcade-blink" style={{ textAlign: 'center', color: 'var(--neon-yellow)', textShadow: '0 0 5px var(--neon-yellow)' }}>
+                START GAME!
               </div>
             )
           : sortedRankings.map((ranking) => {
               const externalPlayer = externalPlayers?.[ranking.playerId];
+              const isTopThree = ranking.rank <= 3;
               return (
                 <div
                   key={ranking.playerId}
+                  className="retro-font"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '5px 0',
-                    borderBottom: '1px solid #eee',
+                    padding: '8px',
+                    marginBottom: '4px',
+                    backgroundColor: isTopThree ? 'rgba(0, 255, 0, 0.1)' : 'rgba(255, 0, 64, 0.1)',
+                    border: isTopThree ? '1px solid var(--neon-green)' : '1px solid var(--neon-red)',
+                    borderRadius: '4px',
+                    color: isTopThree ? 'var(--neon-green)' : 'var(--neon-red)',
+                    textShadow: isTopThree ? '0 0 5px var(--neon-green)' : '0 0 5px var(--neon-red)'
                   }}
                 >
                   <div
