@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useWebSocket } from '../hooks/useWebSocket';
 import { EmojiPicker } from '../components/EmojiPicker';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 export const JoinPage = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -11,7 +11,8 @@ export const JoinPage = () => {
   const { joinGame, onMessage, isConnected } = useWebSocket();
 
   useEffect(() => {
-    onMessage((data) => {
+    const cleanup = onMessage((data) => {
+      // if (!isJoining) return;
       console.log('JoinPage received message:', data);
       if (data.type === 'joinGameSuccess') {
         console.log('Join game success, navigating to player page');
@@ -23,8 +24,10 @@ export const JoinPage = () => {
         alert(`게임 참가 실패: ${data.error}`);
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigate, onMessage, roomId, playerName]);
+    return () => {
+      cleanup();
+    };
+  }, [navigate, onMessage, roomId, playerName, selectedEmoji]);
 
   const handleJoinGame = () => {
     if (!playerName.trim() || !isConnected || !roomId) {
