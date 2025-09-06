@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { GameState, Position } from '../game/types';
 import { ExternalPlayer } from '../game/external-types';
+import { EliminationEffect } from './EliminationEffect';
 import '../styles/retro-arcade.css';
+import '../styles/elimination-effects.css';
 
 interface GameBoardProps {
   gameState: GameState;
@@ -10,6 +12,7 @@ interface GameBoardProps {
   playerIdMap?: Map<string, number>;
   elapsedTime?: number;
   isRunning?: boolean;
+  onPlayerEliminated?: (playerId: string, rank: number) => void;
 }
 
 const GHOST_MESSAGES = [
@@ -30,10 +33,18 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   playerIdMap = new Map(),
   elapsedTime = 0,
   isRunning = false,
+  onPlayerEliminated,
 }) => {
   const { mapSize, walls, players, ghost, playerNames } = gameState;
   const [ghostMessage, setGhostMessage] = useState<string>('');
   const [isWarningFlash, setIsWarningFlash] = useState(false);
+  const [eliminationEffects, setEliminationEffects] = useState<Array<{
+    id: string;
+    playerId: string;
+    playerEmoji: string;
+    position: Position;
+  }>>([]);
+  const [boardShake, setBoardShake] = useState(false);
 
   const elapsedSeconds = elapsedTime / 1000;
   const gameOverInfo = gameState.eliminatedPlayers
@@ -182,6 +193,45 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     return playerEmojis[index % playerEmojis.length];
   };
 
+  // 제거된 플레이어 감지 및 이펙트 추가
+  useEffect(() => {
+    const currentEliminated = gameState.eliminatedPlayers || [];
+    const previousEliminated = eliminationEffects.map(e => {
+      const gameIndex = playerIdMap.get(e.playerId);
+      return gameIndex !== undefined ? gameIndex : -1;
+    }).filter(idx => idx !== -1);
+
+    const newlyEliminated = currentEliminated.filter(idx => !previousEliminated.includes(idx));
+    
+    newlyEliminated.forEach(gameIndex => {
+      const externalPlayerId = Array.from(playerIdMap.entries())
+        .find(([_, idx]) => idx === gameIndex)?.[0];
+      
+      if (externalPlayerId) {
+        const externalPlayer = externalPlayers.find(p => p.id === externalPlayerId);
+        const playerPosition = gameState.players[gameIndex];
+        
+        if (externalPlayer && playerPosition) {
+          const effectId = `elimination-${Date.now()}-${gameIndex}`;
+          setEliminationEffects(prev => [...prev, {
+            id: effectId,
+            playerId: externalPlayerId,
+            playerEmoji: externalPlayer.emoji || '🔵',
+            position: playerPosition
+          }]);
+          
+          // 화면 흔들림 효과
+          setBoardShake(true);
+          setTimeout(() => setBoardShake(false), 500);
+          
+          // 콜백 호출
+          const rank = gameState.rankings.find(r => r.playerId === gameIndex)?.rank || 0;
+          onPlayerEliminated?.(externalPlayerId, rank);
+        }
+      }
+    });
+  }, [gameState.eliminatedPlayers, playerIdMap, externalPlayers, gameState.players, gameState.rankings, onPlayerEliminated]);
+
   // 고스트 메시지 타이머
   useEffect(() => {
     if (gameOverInfo.isOver || !isRunning) {
@@ -233,7 +283,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   }, [gameOverInfo.isOver, isRunning]);
 
   return (
-    <div className="arcade-game-board arcade-crt-effect arcade-scanlines">
+    <div className={`arcade-game-board arcade-crt-effect arcade-scanlines ${boardShake ? 'game-board-shake' : ''}`}>
       {/* 그리드 배경 */}
       {Array.from({ length: mapSize.height }, (_, y) => (
         <div key={y} style={{ display: 'flex' }}>
@@ -346,6 +396,20 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           </div>
         )}
       </div>
+
+      {/* 제거 이팩트들 */}
+      {eliminationEffects.map(effect => (
+        <EliminationEffect
+          key={effect.id}
+          playerId={effect.playerId}
+          playerEmoji={effect.playerEmoji}
+          position={effect.position}
+          cellSize={cellSize}
+          onComplete={() => {
+            setEliminationEffects(prev => prev.filter(e => e.id !== effect.id));
+          }}
+        />
+      ))}
     </div>
   );
 };

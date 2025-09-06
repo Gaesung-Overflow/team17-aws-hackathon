@@ -369,6 +369,7 @@ export const ExternalPacmanGame: React.FC<ExternalPacmanGameProps> = ({
             playerIdMap={playerIdMap}
             elapsedTime={elapsedTime}
             isRunning={isRunning}
+            onPlayerEliminated={callbacks.onPlayerEliminated}
           />
           {isRunning && gameState.gameStartTime && (
             <div

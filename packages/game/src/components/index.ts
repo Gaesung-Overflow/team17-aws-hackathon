@@ -6,3 +6,4 @@ export { PacmanGame } from './PacmanGame';
 export { ExternalPacmanGame } from './ExternalPacmanGame';
 export { GameConfigExample } from './GameConfigExample';
 export { FloatingGameInfo } from './FloatingGameInfo';
+export { EliminationEffect } from './EliminationEffect';
