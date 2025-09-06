@@ -1,14 +1,19 @@
 import React from 'react';
 import { GameState, Position } from '../game/types';
+import { ExternalPlayer } from '../game/external-types';
 
 interface GameBoardProps {
   gameState: GameState;
   cellSize?: number;
+  externalPlayers?: ExternalPlayer[];
+  playerIdMap?: Map<string, number>;
 }
 
 export const GameBoard: React.FC<GameBoardProps> = ({
   gameState,
   cellSize = 50,
+  externalPlayers = [],
+  playerIdMap = new Map(),
 }) => {
   const { mapSize, walls, players, ghost, playerNames } = gameState;
 
@@ -84,6 +89,31 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
   const playerEmojis = ['🔵', '🟢', '🟡', '🟣', '🟠', '🔴', '⚫', '⚪'];
 
+  const getPlayerEmoji = (index: number): string => {
+    // playerIdMap을 역으로 찾아서 external player 정보 가져오기
+    const externalPlayerId = Array.from(playerIdMap.entries()).find(
+      ([_, gameIndex]) => gameIndex === index,
+    )?.[0];
+
+    if (externalPlayerId) {
+      const externalPlayer = externalPlayers.find(
+        (p) => p.id === externalPlayerId,
+      );
+      if (externalPlayer?.emoji) {
+        return externalPlayer.emoji;
+      }
+    }
+
+    // fallback: 인덱스로 직접 찾기
+    const fallbackPlayer = externalPlayers[index];
+    if (fallbackPlayer?.emoji) {
+      return fallbackPlayer.emoji;
+    }
+
+    // 기본 이모지 사용
+    return playerEmojis[index % playerEmojis.length];
+  };
+
   return (
     <div
       style={{
@@ -107,10 +137,23 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       {/* 생존 플레이어들 부드럽게 렌더링 */}
       {players.map((player, index) => {
         if (gameState.eliminatedPlayers?.includes(index)) return null;
-        const playerName = playerNames?.[index] || `Player ${index + 1}`;
+
+        // playerIdMap을 역으로 찾아서 external player 정보 가져오기
+        const externalPlayerId = Array.from(playerIdMap.entries()).find(
+          ([_, gameIndex]) => gameIndex === index,
+        )?.[0];
+
+        const externalPlayer = externalPlayerId
+          ? externalPlayers.find((p) => p.id === externalPlayerId)
+          : externalPlayers[index]; // fallback
+
+        const playerName =
+          externalPlayer?.name || playerNames?.[index] || `Player ${index + 1}`;
+        const emoji = getPlayerEmoji(index);
+
         return (
           <div key={`player-${index}`} style={getSmoothEntityStyle(player, 10)}>
-            {playerEmojis[index % playerEmojis.length]}
+            <span style={{ fontSize: cellSize * 0.7 }}>{emoji}</span>
             <div
               style={{
                 position: 'absolute',

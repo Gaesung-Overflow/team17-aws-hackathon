@@ -4,7 +4,6 @@ export interface ExternalPlayer {
   id: string;
   name?: string;
   emoji?: string;
-  avatar?: string;
   speed?: number;
 }
 
@@ -23,6 +22,7 @@ export interface GameCallbacks {
   onPlayerJoinFailed?: (playerId: string, error: Error) => void;
   onPlayerEliminated?: (playerId: string, rank: number) => void;
   onPlayerMoved?: (playerId: string, position: Position) => void;
+  onPlayerLeft?: (playerId: string) => void;
   onGameEnd?: (rankings: Array<{ playerId: string; rank: number }>) => void;
   onGameStateChange?: (state: 'running' | 'stopped' | 'ended') => void;
   onGameReset?: () => void;
@@ -41,7 +41,7 @@ export interface ExternalGameState {
   players: Array<{
     id: string;
     name?: string;
-    avatar?: string;
+    emoji?: string;
     position: Position;
     isEliminated: boolean;
     effects: PlayerEffect[];
@@ -53,5 +53,7 @@ export interface ExternalGameState {
     playerSpeed: number;
     ghostSpeed: number;
     maxPlayers: number;
+    currentMapId?: string;
+    gameStarted?: boolean;
   };
 }

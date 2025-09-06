@@ -1,127 +1,101 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 const WS_URL = 'wss://mbizopkcbc.execute-api.us-east-1.amazonaws.com/prod';
 
-export const useWebSocket = () => {
-  const ws = useRef<WebSocket | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const messageHandlerRef = useRef<((data: any) => void) | null>(null);
+// 싱글톤 WebSocket 관리
+class WebSocketManager {
+  private ws: WebSocket | null = null;
+  private isConnected = false;
+  private reconnectTimeout: NodeJS.Timeout | null = null;
+  private messageHandlers = new Map<string, (data: any) => void>();
+  private connectionListeners = new Set<(connected: boolean) => void>();
 
-  const connect = useCallback(() => {
-    if (ws.current?.readyState === WebSocket.OPEN) {
-      return;
-    }
+  connect() {
+    if (this.ws?.readyState === WebSocket.OPEN) return;
 
-    console.log('WebSocket 연속 시도 중...');
-    ws.current = new WebSocket(WS_URL);
+    this.ws = new WebSocket(WS_URL);
 
-    ws.current.onopen = () => {
-      console.log('WebSocket 연결 성공!');
-      setIsConnected(true);
-
-      // 재연결 타이머 취소
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = null;
+    this.ws.onopen = () => {
+      this.isConnected = true;
+      this.connectionListeners.forEach((listener) => listener(true));
+      if (this.reconnectTimeout) {
+        clearTimeout(this.reconnectTimeout);
+        this.reconnectTimeout = null;
       }
     };
 
-    ws.current.onclose = (event) => {
-      console.log('WebSocket 연결 종료:', {
-        code: event.code,
-        reason: event.reason,
-        wasClean: event.wasClean,
-      });
-      setIsConnected(false);
-
-      // 정상 종료(1000)가 아닌 경우만 재연결
-      if (event.code !== 1000 && !reconnectTimeoutRef.current) {
-        console.log('비정상 연결 종료, 재연결 시도...');
-        reconnectTimeoutRef.current = setTimeout(() => {
-          console.log('재연결 시도 중...');
-          connect();
-        }, 1000); // 재연결 시간을 1초로 단축
+    this.ws.onclose = (event) => {
+      this.isConnected = false;
+      this.connectionListeners.forEach((listener) => listener(false));
+      if (event.code !== 1000 && !this.reconnectTimeout) {
+        this.reconnectTimeout = setTimeout(() => this.connect(), 1000);
       }
     };
 
-    ws.current.onerror = (error) => {
-      console.error('WebSocket 오류:', {
-        error,
-        readyState: ws.current?.readyState,
-        url: WS_URL,
-      });
-    };
-
-    ws.current.onmessage = (event) => {
-      if (messageHandlerRef.current) {
-        const data = JSON.parse(event.data);
-        console.log('WebSocket 메시지 수신:', data);
-        messageHandlerRef.current(data);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    connect();
-
-    return () => {
-      setIsConnected(false);
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-        // NOTE: 컴포넌트 이동시 소켓이 끊어지면 방 정보도 잃으므로 제외
-        // ws.current.close();
-      }
-    };
-  }, [connect]);
-
-  const sendMessage = useCallback(
-    (message: any) => {
-      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-        console.log('WebSocket 메시지 전송:', message);
+    this.ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log('메시지 수신:', data, 'handlers:', this.messageHandlers.size);
+      this.messageHandlers.forEach((handler) => {
         try {
-          ws.current.send(JSON.stringify(message));
+          handler(data);
         } catch (error) {
-          console.error('WebSocket 메시지 전송 오류:', error);
+          console.error('Handler error:', error);
         }
-      } else {
-        console.warn(
-          'WebSocket 연결되지 않음. readyState:',
-          ws.current?.readyState,
-          '메시지:',
-          message,
-        );
-        // 연결이 끊어졌으면 재연결 시도
-        if (ws.current?.readyState === WebSocket.CLOSED) {
-          connect();
-        }
+      });
+    };
+  }
+
+  sendMessage(message: any) {
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(message));
+    } else {
+      console.warn('WebSocket not connected');
+      if (this.ws?.readyState === WebSocket.CLOSED) {
+        this.connect();
       }
-    },
-    [connect],
+    }
+  }
+
+  addMessageHandler(callback: (data: any) => void) {
+    const id = Math.random().toString(36).substring(2, 9);
+    this.messageHandlers.set(id, callback);
+    return () => this.messageHandlers.delete(id);
+  }
+
+  addConnectionListener(listener: (connected: boolean) => void) {
+    this.connectionListeners.add(listener);
+    return () => this.connectionListeners.delete(listener);
+  }
+
+  getConnectionState() {
+    return this.isConnected;
+  }
+}
+
+const wsManager = new WebSocketManager();
+
+export const useWebSocket = () => {
+  const [isConnected, setIsConnected] = useState(
+    wsManager.getConnectionState(),
   );
 
-  const onMessage = useCallback((callback: (data: any) => void) => {
-    messageHandlerRef.current = callback;
+  useEffect(() => {
+    wsManager.connect();
+    return wsManager.addConnectionListener(setIsConnected);
   }, []);
 
-  // 방 입장 후 메시지 브로드캐스트
-  // const sendRoomMessage = useCallback(
-  //   (roomId: string, message: any) => {
-  //     // 1. 먼저 방에 입장
-  //     sendMessage({ type: 'joinRoom', roomId });
-  //     // 2. 바로 메시지 브로드캐스트
-  //     sendMessage(message);
-  //   },
-  //   [sendMessage],
-  // );
+  const sendMessage = useCallback((message: any) => {
+    wsManager.sendMessage(message);
+  }, []);
+
+  const onMessage = useCallback((callback: (data: any) => void) => {
+    return wsManager.addMessageHandler(callback);
+  }, []);
 
   const createRoom = useCallback(
     (roomName: string) => {
       const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-      // 그 다음 createRoom 메시지 브로드캐스트
       sendMessage({ type: 'createRoom', roomId, roomName });
       return roomId;
     },
@@ -129,19 +103,9 @@ export const useWebSocket = () => {
   );
 
   const joinGame = useCallback(
-    (roomId: string, playerName: string) => {
+    (roomId: string, playerName: string, emoji?: string) => {
       const playerId = Math.random().toString(36).substring(2, 8);
-      console.log('Sending joinGame message:', {
-        roomId,
-        playerId,
-        playerName,
-      });
-      sendMessage({
-        type: 'joinGame',
-        roomId,
-        playerId,
-        playerName,
-      });
+      sendMessage({ type: 'joinGame', roomId, playerId, playerName, emoji });
       return playerId;
     },
     [sendMessage],

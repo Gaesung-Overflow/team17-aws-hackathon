@@ -23,6 +23,8 @@ interface ExternalPacmanGameProps {
     playerSpeed?: number;
     ghostSpeed?: number;
     maxPlayers?: number;
+    selectedMapId?: string;
+    gameStarted?: boolean;
   };
   showControls?: boolean;
   showStats?: boolean;
@@ -61,6 +63,8 @@ export const ExternalPacmanGame: React.FC<ExternalPacmanGameProps> = ({
       engine.setGhostSpeed(gameConfig.ghostSpeed);
     if (gameConfig.maxPlayers !== undefined)
       engine.setMaxPlayers(gameConfig.maxPlayers);
+    if (gameConfig.selectedMapId !== undefined)
+      engine.selectMap(gameConfig.selectedMapId);
 
     // 이벤트 리스너 등록
     engine.on('playerJoined', (playerId: string, gameIndex: number) => {
@@ -88,7 +92,18 @@ export const ExternalPacmanGame: React.FC<ExternalPacmanGameProps> = ({
     };
   }, []);
 
-  // 게임 설정 변경 처리
+  // 맵 선택 처리
+  useEffect(() => {
+    if (!gameEngineRef.current || !gameConfig.selectedMapId) return;
+
+    const success = gameEngineRef.current.selectMap(gameConfig.selectedMapId);
+    if (success) {
+      setGameState(gameEngineRef.current.getGameState());
+      setExternalState(gameEngineRef.current.getExternalGameState());
+    }
+  }, [gameConfig.selectedMapId]);
+
+  // 기타 게임 설정 변경 처리
   useEffect(() => {
     if (!gameEngineRef.current) return;
 
@@ -104,7 +119,16 @@ export const ExternalPacmanGame: React.FC<ExternalPacmanGameProps> = ({
     if (gameConfig.maxPlayers !== undefined) {
       gameEngineRef.current.setMaxPlayers(gameConfig.maxPlayers);
     }
-  }, [gameConfig]);
+    if (gameConfig.gameStarted !== undefined) {
+      gameEngineRef.current.setGameStarted(gameConfig.gameStarted);
+    }
+  }, [
+    gameConfig.ghostLevel,
+    gameConfig.playerSpeed,
+    gameConfig.ghostSpeed,
+    gameConfig.maxPlayers,
+    gameConfig.gameStarted,
+  ]);
 
   // 외부 플레이어 변경 처리
   useEffect(() => {
@@ -264,6 +288,8 @@ export const ExternalPacmanGame: React.FC<ExternalPacmanGameProps> = ({
       engine.setGhostSpeed(gameConfig.ghostSpeed);
     if (gameConfig.maxPlayers !== undefined)
       engine.setMaxPlayers(gameConfig.maxPlayers);
+    if (gameConfig.selectedMapId !== undefined)
+      engine.selectMap(gameConfig.selectedMapId);
 
     // 이벤트 리스너 재등록
     engine.on('playerJoined', (playerId: string, gameIndex: number) => {
@@ -297,6 +323,14 @@ export const ExternalPacmanGame: React.FC<ExternalPacmanGameProps> = ({
     remainingPlayers: 0,
   };
 
+  const startDisabled =
+    playerIdMap.size <= 1 ||
+    isRunning ||
+    gameOverInfo.isOver ||
+    (gameConfig.gameStarted && !isRunning);
+
+  const stopDisabled = !isRunning || gameOverInfo.isOver;
+
   return (
     <div
       style={{
@@ -305,24 +339,6 @@ export const ExternalPacmanGame: React.FC<ExternalPacmanGameProps> = ({
         color: '#333',
       }}
     >
-      {showControls && (
-        <div style={{ marginBottom: '20px', textAlign: 'center' }}>
-          <button
-            onClick={handleStart}
-            disabled={playerIdMap.size <= 1 || isRunning || gameOverInfo.isOver}
-          >
-            시작
-          </button>
-          <button
-            onClick={handleStop}
-            disabled={!isRunning || gameOverInfo.isOver}
-          >
-            정지
-          </button>
-          <button onClick={handleReset}>리셋</button>
-        </div>
-      )}
-
       <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
         <div
           style={{
@@ -334,6 +350,8 @@ export const ExternalPacmanGame: React.FC<ExternalPacmanGameProps> = ({
           <GameBoard
             gameState={gameState}
             cellSize={gameConfig.cellSize || 45}
+            externalPlayers={externalPlayers}
+            playerIdMap={playerIdMap}
           />
 
           {gameOverInfo.isOver && (
@@ -353,8 +371,60 @@ export const ExternalPacmanGame: React.FC<ExternalPacmanGameProps> = ({
         </div>
 
         {showRankings && (
-          <div style={{ width: '300px' }}>
+          <div style={{ width: '300px', flexShrink: 0 }}>
+            {showControls && (
+              <div
+                style={{
+                  marginBottom: '20px',
+                  textAlign: 'center',
+                  gap: '10px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                }}
+              >
+                <button
+                  onClick={handleStart}
+                  disabled={
+                    playerIdMap.size <= 1 ||
+                    isRunning ||
+                    gameOverInfo.isOver ||
+                    (gameConfig.gameStarted && !isRunning)
+                  }
+                  style={{
+                    width: '100%',
+                    ...(startDisabled
+                      ? {}
+                      : {
+                          backgroundColor: '#28a745',
+                          color: 'white',
+                        }),
+                  }}
+                >
+                  🚀 시작
+                </button>
+                <button
+                  onClick={handleStop}
+                  disabled={!isRunning || gameOverInfo.isOver}
+                  style={{
+                    width: '100%',
+                    ...(stopDisabled
+                      ? {}
+                      : {
+                          backgroundColor: '#dc3545',
+                          color: 'white',
+                        }),
+                  }}
+                >
+                  ⏸️ 일시정지
+                </button>
+                <button onClick={handleReset} style={{ width: '100%' }}>
+                  🔄 리셋
+                </button>
+              </div>
+            )}
             <RankingBoard
+              externalPlayers={externalPlayers}
               rankings={gameState.rankings}
               totalPlayers={gameOverInfo.totalPlayers}
               remainingPlayers={gameOverInfo.remainingPlayers}

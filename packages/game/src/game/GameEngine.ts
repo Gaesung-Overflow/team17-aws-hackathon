@@ -19,7 +19,9 @@ export class GameEngine {
       eliminatedPlayers: initialState.eliminatedPlayers || [],
       rankings: initialState.rankings || [],
       gameStep: initialState.gameStep || 0,
-      playerNames: initialState.playerNames || initialState.players.map((_, i) => `Player ${i + 1}`),
+      playerNames:
+        initialState.playerNames ||
+        initialState.players.map((_, i) => `Player ${i + 1}`),
     };
     this.playerMovements = initialState.players.map(
       (pos) => new SmoothMovement(pos),
@@ -167,7 +169,7 @@ export class GameEngine {
   }
 
   getGameState(): GameState {
-    return { ...this.gameState };
+    return this.gameState;
   }
 
   isGameOver(): {
@@ -208,6 +210,17 @@ export class GameEngine {
       (pos) => new SmoothMovement(pos),
     );
     this.ghostMovement = new SmoothMovement(newState.ghost);
+  }
+
+  updateMapState(
+    walls: Position[],
+    mapSize: { width: number; height: number },
+    ghostPos: Position,
+  ): void {
+    this.gameState.walls = walls;
+    this.gameState.mapSize = mapSize;
+    this.gameState.ghost = ghostPos;
+    this.ghostMovement = new SmoothMovement(ghostPos);
   }
 
   addPlayer(): void {

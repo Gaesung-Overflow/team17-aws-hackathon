@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useWebSocket } from '../hooks/useWebSocket';
+import { EmojiPicker } from '../components/EmojiPicker';
 
 export const JoinPage = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
   const [playerName, setPlayerName] = useState('');
+  const [selectedEmoji, setSelectedEmoji] = useState('😀');
   const { joinGame, onMessage, isConnected } = useWebSocket();
 
   useEffect(() => {
@@ -14,7 +16,7 @@ export const JoinPage = () => {
       if (data.type === 'joinGameSuccess') {
         console.log('Join game success, navigating to player page');
         navigate(
-          `/player?roomId=${roomId}&playerId=${data.playerId}&playerName=${encodeURIComponent(playerName)}`,
+          `/player?roomId=${roomId}&playerId=${data.playerId}&playerName=${encodeURIComponent(playerName)}&emoji=${encodeURIComponent(selectedEmoji)}`,
         );
       } else if (data.type === 'joinGameError') {
         console.error('Join game error:', data.error);
@@ -30,8 +32,7 @@ export const JoinPage = () => {
       );
       return;
     }
-    joinGame(roomId, playerName.trim());
-    // 서버 응답을 기다림 (useEffect에서 처리)
+    joinGame(roomId, playerName.trim(), selectedEmoji);
   };
 
   return (
@@ -55,6 +56,16 @@ export const JoinPage = () => {
             marginBottom: '20px',
           }}
         />
+
+        <label style={{ display: 'block', marginBottom: '10px' }}>
+          이모지 선택:
+        </label>
+        <div style={{ marginBottom: '20px' }}>
+          <EmojiPicker
+            selectedEmoji={selectedEmoji}
+            onEmojiSelect={setSelectedEmoji}
+          />
+        </div>
 
         <button
           onClick={handleJoinGame}

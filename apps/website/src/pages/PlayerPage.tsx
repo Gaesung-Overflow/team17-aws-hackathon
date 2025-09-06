@@ -7,6 +7,7 @@ export const PlayerPage = () => {
   const roomId = searchParams.get('roomId');
   const playerId = searchParams.get('playerId');
   const playerName = searchParams.get('playerName');
+  const initialEmoji = searchParams.get('emoji') || '😀';
 
   const { sendPlayerAction, onMessage, isConnected } = useWebSocket();
   const [gameState, setGameState] = useState<
@@ -52,6 +53,12 @@ export const PlayerPage = () => {
             }}
           >
             ● {isConnected ? '연결됨' : '연결 끊어짐'}
+          </div>
+        </div>
+
+        <div style={{ marginTop: '20px' }}>
+          <div style={{ fontSize: '16px', fontWeight: 'bold' }}>
+            내 이모지: {initialEmoji}
           </div>
         </div>
       </div>

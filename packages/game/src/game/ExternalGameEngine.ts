@@ -1,5 +1,5 @@
 import { GameEngine } from './GameEngine';
-import { MapGenerator } from './MapGenerator';
+import { MapGenerator, MapInfo } from './MapGenerator';
 import { SmoothMovement } from './SmoothMovement';
 import { PlayerEngine } from './PlayerEngine';
 import type { GameState, Position } from './types';
@@ -17,6 +17,8 @@ export class ExternalGameEngine extends GameEngine {
   private playerEffects = new Map<number, PlayerEffect[]>(); // gameIndex -> effects
   private eventListeners = new Map<string, Function[]>();
   private maxPlayers: number = 10; // 기본 최대 플레이어 수
+  private currentMapId: string = 'classic'; // 현재 선택된 맵 ID
+  private gameStarted: boolean = false; // 게임 시작 여부
 
   constructor(initialState?: Partial<GameState>) {
     const defaultState = {
@@ -39,6 +41,50 @@ export class ExternalGameEngine extends GameEngine {
   // 최대 플레이어 수 반환
   getMaxPlayers(): number {
     return this.maxPlayers;
+  }
+
+  // 맵 선택 (게임 시작 전에만 가능)
+  selectMap(mapId: string): boolean {
+    if (this.gameStarted) {
+      return false;
+    }
+
+    const mapInfo = MapGenerator.getMapById(mapId);
+    if (!mapInfo) {
+      return false;
+    }
+
+    this.currentMapId = mapId;
+
+    const ghostPos = {
+      x: Math.floor(mapInfo.mapSize.width / 2),
+      y: Math.floor(mapInfo.mapSize.height / 2),
+    };
+
+    this.updateMapState(mapInfo.walls, mapInfo.mapSize, ghostPos);
+    this.repositionPlayersForNewMap();
+
+    return true;
+  }
+
+  // 현재 맵 정보 반환
+  getCurrentMapInfo(): MapInfo | null {
+    return MapGenerator.getMapById(this.currentMapId);
+  }
+
+  // 사용 가능한 모든 맵 목록 반환
+  getAvailableMaps(): MapInfo[] {
+    return MapGenerator.getAllMaps();
+  }
+
+  // 게임 시작 상태 설정
+  setGameStarted(started: boolean): void {
+    this.gameStarted = started;
+  }
+
+  // 게임 시작 상태 반환
+  isGameStarted(): boolean {
+    return this.gameStarted;
   }
 
   // 외부 플레이어 추가
@@ -192,19 +238,39 @@ export class ExternalGameEngine extends GameEngine {
     const gameState = this.getGameState();
     const gameOver = this.isGameOver();
 
-    const players = Array.from(this.externalPlayerMap.entries()).map(
-      ([id, gameIndex]) => {
+    // 모든 플레이어 정보를 gameIndex 순서로 정렬하여 반환
+    const players: any[] = [];
+
+    // gameState.players 배열의 각 인덱스에 대해 처리
+    gameState.players.forEach((position, gameIndex) => {
+      // 해당 gameIndex에 매핑된 external player 찾기
+      const externalEntry = Array.from(this.externalPlayerMap.entries()).find(
+        ([_, idx]) => idx === gameIndex,
+      );
+
+      if (externalEntry) {
+        const [id, _] = externalEntry;
         const info = this.playerInfo.get(id);
-        return {
+        players[gameIndex] = {
           id,
-          name: info?.name,
-          avatar: info?.avatar,
-          position: gameState.players[gameIndex],
+          name: info?.name || `Player ${gameIndex + 1}`,
+          emoji: info?.emoji,
+          position,
           isEliminated: gameState.eliminatedPlayers.includes(gameIndex),
           effects: this.playerEffects.get(gameIndex) || [],
         };
-      },
-    );
+      } else {
+        // external player가 없는 경우 기본값 사용
+        players[gameIndex] = {
+          id: `player-${gameIndex}`,
+          name: `Player ${gameIndex + 1}`,
+          emoji: undefined,
+          position,
+          isEliminated: gameState.eliminatedPlayers.includes(gameIndex),
+          effects: this.playerEffects.get(gameIndex) || [],
+        };
+      }
+    });
 
     const rankings = this.getRankings()
       .map((r) => ({
@@ -220,7 +286,7 @@ export class ExternalGameEngine extends GameEngine {
       isRunning: false, // 외부에서 관리
       isEnded: gameOver.isOver,
       step: gameState.gameStep,
-      players,
+      players: players.filter((p) => p), // undefined 제거
       ghost: gameState.ghost,
       rankings,
       gameConfig: {
@@ -228,11 +294,13 @@ export class ExternalGameEngine extends GameEngine {
         playerSpeed: this.getPlayerSpeed(),
         ghostSpeed: this.getGhostSpeed(),
         maxPlayers: this.maxPlayers,
+        currentMapId: this.currentMapId,
+        gameStarted: this.gameStarted,
       },
     };
   }
 
-  // 게임 업데이트 오버라이드 (이펙트 처리 포함)
+  // 게임 업데이트 오버라이드 (이팩트 처리 포함)
   updateGame(): GameState {
     this.updateEffects();
     const result = super.updateGame();
@@ -331,10 +399,16 @@ export class ExternalGameEngine extends GameEngine {
 
   // 게임 리셋
   reset(): void {
+    const currentMap =
+      this.getCurrentMapInfo() || MapGenerator.createClassicMap();
     const initialState = {
       players: [],
-      ghost: { x: 10, y: 6 },
-      ...MapGenerator.createPacmanMap(),
+      ghost: {
+        x: Math.floor(currentMap.mapSize.width / 2),
+        y: Math.floor(currentMap.mapSize.height / 2),
+      },
+      walls: currentMap.walls,
+      mapSize: currentMap.mapSize,
       eliminatedPlayers: [],
       rankings: [],
       gameStep: 0,
@@ -345,9 +419,77 @@ export class ExternalGameEngine extends GameEngine {
     this.playerInfo.clear();
     this.playerEffects.clear();
     this.eventListeners.clear();
-    
+    this.gameStarted = false; // 게임 시작 상태 리셋
+    this.currentMapId = 'classic'; // 맵 ID 리셋
+
     // 부모 클래스 리셋
     this.resetGame(initialState);
+  }
+
+  // 새 맵에 맞게 플레이어 재배치
+  private repositionPlayersForNewMap(): void {
+    const gameState = this.getGameState();
+    const mapSize = gameState.mapSize;
+
+    // 기존 플레이어들을 새 맵의 코너에 재배치
+    gameState.players.forEach((_, index) => {
+      const corners = [
+        { x: 1, y: 1 }, // 좌상
+        { x: mapSize.width - 2, y: 1 }, // 우상
+        { x: 1, y: mapSize.height - 2 }, // 좌하
+        { x: mapSize.width - 2, y: mapSize.height - 2 }, // 우하
+      ];
+
+      const targetCorner = corners[index % 4];
+
+      // 해당 위치가 유효한지 확인하고 재배치
+      if (isValidPosition(targetCorner, mapSize, gameState.walls)) {
+        gameState.players[index] = targetCorner;
+        // SmoothMovement도 업데이트
+        (this as any).playerMovements[index] = new SmoothMovement(targetCorner);
+      } else {
+        // 유효하지 않으면 가장 가까운 빈 공간 찾기
+        const validPos = this.findNearestValidPosition(targetCorner, gameState);
+        gameState.players[index] = validPos;
+        (this as any).playerMovements[index] = new SmoothMovement(validPos);
+      }
+    });
+  }
+
+  // 가장 가까운 유효한 위치 찾기
+  private findNearestValidPosition(
+    target: Position,
+    gameState: GameState,
+  ): Position {
+    const occupiedPositions = new Set(
+      gameState.players.map((p) => `${p.x},${p.y}`),
+    );
+    occupiedPositions.add(`${gameState.ghost.x},${gameState.ghost.y}`);
+
+    for (
+      let radius = 0;
+      radius < Math.max(gameState.mapSize.width, gameState.mapSize.height);
+      radius++
+    ) {
+      for (let dx = -radius; dx <= radius; dx++) {
+        for (let dy = -radius; dy <= radius; dy++) {
+          if (Math.abs(dx) !== radius && Math.abs(dy) !== radius && radius > 0)
+            continue;
+
+          const pos = { x: target.x + dx, y: target.y + dy };
+
+          if (
+            isValidPosition(pos, gameState.mapSize, gameState.walls) &&
+            !occupiedPositions.has(`${pos.x},${pos.y}`)
+          ) {
+            return pos;
+          }
+        }
+      }
+    }
+
+    // 최후의 수단으로 (1,1) 반환
+    return { x: 1, y: 1 };
   }
 
   private addPlayerToCorner(): void {

@@ -12,7 +12,8 @@ export const GamePage = () => {
   const roomId = searchParams.get('roomId');
   const roomName = searchParams.get('roomName');
   const isHost = searchParams.get('isHost') === 'true';
-  const { sendMessage, onMessage, isConnected } = useWebSocket();
+  const webSocket = useWebSocket();
+  const { sendMessage, onMessage, isConnected } = webSocket;
 
   const [players, setPlayers] = useState<ExternalPlayer[]>([]);
   const [commands, setCommands] = useState<PlayerCommand[]>([]);
@@ -24,28 +25,23 @@ export const GamePage = () => {
     playerSpeedLevel: 5,
     ghostSpeedLevel: 5,
     ghostLevel: 3,
+    selectedMapId: 'classic',
   });
+  const [gameStarted] = useState(false);
 
   const speedLevelToMs = (level: number) => 500 - (level - 1) * 50;
   const MAX_PLAYERS = 10;
 
-  // 웹소켓 메시지 처리
   useEffect(() => {
-    onMessage((data) => {
-      console.log('🎮 GamePage received message:', data);
-
-      // 모든 메시지 타입 로깅
-      if (data.type) {
-        console.log(`📨 Message type: ${data.type}`);
-      }
+    const cleanup = onMessage((data) => {
+      console.log('GamePage received message:', data);
 
       if (data.type === 'playerJoined') {
-        // 새 플레이어를 게임에 추가
         setPlayers((prev) => {
           const newPlayer: ExternalPlayer = {
             id: data.playerId,
             name: data.playerName,
-            avatar: ['🚀', '🎉', '🎆', '⭐'][prev.length % 4],
+            emoji: data.emoji,
           };
           return [...prev, newPlayer];
         });
@@ -62,7 +58,6 @@ export const GamePage = () => {
       }
 
       if (data.type === 'playerAction') {
-        // 플레이어 액션을 게임 명령으로 변환
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const actionMap: Record<string, any> = {
           up: { type: 'move', direction: 'up' },
@@ -90,10 +85,17 @@ export const GamePage = () => {
           type: 'success',
         });
       }
-    });
-  }, [onMessage, isHost]);
+    }) as () => void;
 
-  // GamePage에서는 이미 방이 생성된 상태로 오므로 createRoom 호출 제거
+    return cleanup;
+  }, [onMessage]);
+
+  // 방 입장 처리
+  useEffect(() => {
+    if (roomId && isConnected) {
+      sendMessage({ type: 'joinRoom', roomId });
+    }
+  }, [roomId, isConnected, sendMessage]);
 
   const addPlayer = () => {
     if (players.length >= MAX_PLAYERS) {
@@ -107,7 +109,7 @@ export const GamePage = () => {
     const newPlayer = {
       id: `player_${Date.now()}`,
       name: `플레이어 ${players.length + 1}`,
-      avatar: ['🚀', '🎉', '🎆', '⭐'][players.length % 4],
+      emoji: ['🚀', '🎉', '🎆', '⭐'][players.length % 4],
     };
     setPlayers((prev) => [...prev, newPlayer]);
     setCommands((prev) => [...prev, { playerId: newPlayer.id, type: 'add' }]);
@@ -147,18 +149,12 @@ export const GamePage = () => {
         }}
       >
         <div>
-          <h1>돔황챠 - 팩맨 서바이벌</h1>
-          {roomName && (
-            <h2 style={{ margin: '5px 0', color: '#007bff' }}>{roomName}</h2>
-          )}
+          {roomName && <h1 style={{ color: '#007bff' }}>{roomName}</h1>}
         </div>
         {roomId && (
           <div style={{ textAlign: 'right' }}>
             <div>
               방 ID: <strong>{roomId}</strong>
-            </div>
-            <div style={{ fontSize: '14px', color: '#666' }}>
-              {isHost ? '방장' : '참가자'}
             </div>
             <div
               style={{
@@ -191,36 +187,6 @@ export const GamePage = () => {
         )}
       </div>
 
-      {isHost && roomId && (
-        <div
-          style={{
-            border: '1px solid #ccc',
-            padding: '15px',
-            borderRadius: '8px',
-            marginBottom: '20px',
-            backgroundColor: '#f9f9f9',
-          }}
-        >
-          <h3>참가자 초대</h3>
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-            <QRCodeDisplay
-              value={`${window.location.origin}/join/${roomId}`}
-              size={150}
-            />
-            <div>
-              <p>
-                <strong>참가 방법:</strong>
-              </p>
-              <p>1. QR 코드 스캔</p>
-              <p>2. 또는 직접 접속:</p>
-              <code style={{ backgroundColor: '#eee', padding: '5px' }}>
-                {window.location.origin}/join/{roomId}
-              </code>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div
         style={{
           marginBottom: '20px',
@@ -229,6 +195,41 @@ export const GamePage = () => {
           flexWrap: 'wrap',
         }}
       >
+        {isHost && roomId && (
+          <div
+            style={{
+              border: '1px solid #ccc',
+              padding: '15px',
+              borderRadius: '8px',
+              minWidth: '300px',
+              flexGrow: 1,
+            }}
+          >
+            <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+              <QRCodeDisplay
+                value={`${window.location.origin}/join/${roomId}`}
+                size={150}
+              />
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '15px',
+                }}
+              >
+                <h2 style={{ fontSize: '20px', fontWeight: 'bold' }}>
+                  지금 참가하세요!
+                </h2>
+                <p>1. QR 코드 스캔</p>
+                <p>
+                  2. 또는 직접 접속:
+                  <br />
+                  {window.location.origin}/join/{roomId}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
         <div
           style={{
             border: '1px solid #ccc',
@@ -237,10 +238,39 @@ export const GamePage = () => {
             minWidth: '300px',
           }}
         >
-          <h3>게임 설정</h3>
           <div
             style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
           >
+            <h3 style={{ fontSize: '20px', fontWeight: 'bold' }}>게임 설정</h3>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <span>맵 선택:</span>
+              <select
+                value={gameSettings.selectedMapId}
+                onChange={(e) =>
+                  setGameSettings((prev) => ({
+                    ...prev,
+                    selectedMapId: e.target.value,
+                  }))
+                }
+                disabled={gameStarted}
+                style={{
+                  opacity: gameStarted ? 0.5 : 1,
+                  cursor: gameStarted ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <option value="classic">클래식 (보통)</option>
+                <option value="open">오픈 필드 (쉬움)</option>
+                <option value="cross">십자가 (보통)</option>
+                <option value="maze">미로 (어려움)</option>
+                <option value="spiral">스파이럴 (어려움)</option>
+              </select>
+            </div>
             <div
               style={{
                 display: 'flex',
@@ -261,6 +291,8 @@ export const GamePage = () => {
                     playerSpeedLevel: parseInt(e.target.value),
                   }))
                 }
+                disabled={gameStarted}
+                style={{ opacity: gameStarted ? 0.5 : 1 }}
               />
             </div>
             <div
@@ -283,6 +315,8 @@ export const GamePage = () => {
                     ghostSpeedLevel: parseInt(e.target.value),
                   }))
                 }
+                disabled={gameStarted}
+                style={{ opacity: gameStarted ? 0.5 : 1 }}
               />
             </div>
             <div
@@ -301,12 +335,24 @@ export const GamePage = () => {
                     ghostLevel: parseInt(e.target.value),
                   }))
                 }
+                disabled={gameStarted}
+                style={{
+                  opacity: gameStarted ? 0.5 : 1,
+                  cursor: gameStarted ? 'not-allowed' : 'pointer',
+                }}
               >
                 <option value={2}>쉬움</option>
                 <option value={3}>보통</option>
                 <option value={4}>어려움</option>
               </select>
             </div>
+            {gameStarted && (
+              <div
+                style={{ fontSize: '12px', color: '#666', fontStyle: 'italic' }}
+              >
+                게임 시작 후에는 설정을 변경할 수 없습니다.
+              </div>
+            )}
           </div>
         </div>
 
@@ -316,9 +362,12 @@ export const GamePage = () => {
             padding: '15px',
             borderRadius: '8px',
             minWidth: '300px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
           }}
         >
-          <h3>
+          <h3 style={{ fontSize: '20px', fontWeight: 'bold' }}>
             참가자 목록 ({players.length}/{MAX_PLAYERS}명)
           </h3>
 
@@ -348,9 +397,10 @@ export const GamePage = () => {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '10px',
+                    color: '#333',
                   }}
                 >
-                  <span style={{ fontSize: '20px' }}>{player.avatar}</span>
+                  <span style={{ fontSize: '20px' }}>{player.emoji}</span>
                   <span style={{ fontWeight: 'bold' }}>{player.name}</span>
                   <span style={{ fontSize: '12px', color: '#666' }}>
                     #{index + 1}
@@ -359,22 +409,6 @@ export const GamePage = () => {
               ))
             )}
           </div>
-
-          {isHost && players.length > 0 && (
-            <button
-              style={{
-                marginTop: '15px',
-                padding: '10px 20px',
-                backgroundColor: '#28a745',
-                color: 'white',
-                border: 'none',
-                borderRadius: '5px',
-                width: '100%',
-              }}
-            >
-              게임 시작
-            </button>
-          )}
         </div>
       </div>
 
@@ -391,6 +425,8 @@ export const GamePage = () => {
           playerSpeed: speedLevelToMs(gameSettings.playerSpeedLevel),
           ghostSpeed: speedLevelToMs(gameSettings.ghostSpeedLevel),
           ghostLevel: gameSettings.ghostLevel,
+          selectedMapId: gameSettings.selectedMapId,
+          gameStarted: gameStarted,
         }}
       />
       {toast && (

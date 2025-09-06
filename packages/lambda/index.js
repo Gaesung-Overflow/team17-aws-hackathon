@@ -146,6 +146,7 @@ exports.handler = async (event) => {
               playerName: body.playerName,
               roomId: body.roomId,
               roomMembers: roomMembers.Items,
+              emoji: body.emoji,
             };
 
             const joinMessage = {
@@ -153,6 +154,7 @@ exports.handler = async (event) => {
               playerId: body.playerId,
               playerName: body.playerName,
               roomId: body.roomId,
+              emoji: body.emoji,
             };
 
             console.log('Broadcasting messages to all members:', {

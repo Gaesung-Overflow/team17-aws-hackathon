@@ -2,7 +2,6 @@ export interface ExternalPlayer {
   id: string;
   name?: string;
   emoji?: string;
-  avatar?: string;
   speed?: number;
 }
 
