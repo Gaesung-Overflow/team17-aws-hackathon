@@ -6,7 +6,7 @@
   *마지막 한 바이트의 주인공이 되어볼까요?* 🍕💾
 </div>
 
-Amazon Q Developer Hackathon으로 구현하고자 하는 아이디어를 설명합니다.
+![intro](./docs/intro.gif)
 
 ## 어플리케이션 개요
 
