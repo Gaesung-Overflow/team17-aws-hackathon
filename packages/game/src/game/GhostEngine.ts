@@ -77,6 +77,7 @@ export class GhostEngine extends MovementEngine {
     });
 
     this.lastDirection = this.selectWeightedDirection(weights);
+    this.pathContinuity.updateDirection(this.lastDirection);
     this.updateHistory(currentPos);
     return this.lastDirection;
   }
@@ -103,6 +104,7 @@ export class GhostEngine extends MovementEngine {
     });
 
     this.lastDirection = this.selectWeightedDirection(weights);
+    this.pathContinuity.updateDirection(this.lastDirection);
     this.updateHistory(currentPos);
     return this.lastDirection;
   }
@@ -135,6 +137,7 @@ export class GhostEngine extends MovementEngine {
     });
 
     this.lastDirection = this.selectWeightedDirection(weights);
+    this.pathContinuity.updateDirection(this.lastDirection);
     this.updateHistory(currentPos);
     return this.lastDirection;
   }
@@ -186,6 +189,7 @@ export class GhostEngine extends MovementEngine {
     });
 
     this.lastDirection = this.selectWeightedDirection(weights);
+    this.pathContinuity.updateDirection(this.lastDirection);
     this.updateHistory(currentPos);
     return this.lastDirection;
   }

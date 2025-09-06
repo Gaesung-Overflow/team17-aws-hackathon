@@ -46,6 +46,7 @@ export const ExternalPacmanGame: React.FC<ExternalPacmanGameProps> = ({
   const [externalState, setExternalState] = useState<ExternalGameState>();
   const [isRunning, setIsRunning] = useState(false);
   const [step, setStep] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0);
   const [playerIdMap, setPlayerIdMap] = useState<Map<string, number>>(
     new Map(),
   );
@@ -242,6 +243,11 @@ export const ExternalPacmanGame: React.FC<ExternalPacmanGameProps> = ({
           const smoothState = gameEngineRef.current.updateSmoothMovement();
           setGameState(smoothState);
 
+          // 경과 시간 업데이트
+          if (gameEngineRef.current.getGameState().gameStartTime) {
+            setElapsedTime(gameEngineRef.current.getElapsedTime());
+          }
+
           animationFrame = requestAnimationFrame(gameLoop);
         }
       }
@@ -259,6 +265,7 @@ export const ExternalPacmanGame: React.FC<ExternalPacmanGameProps> = ({
   }, [isRunning, updateGame]);
 
   const handleStart = () => {
+    gameEngineRef.current?.startGame();
     setIsRunning(true);
     callbacks.onGameStateChange?.('running');
   };
@@ -307,6 +314,7 @@ export const ExternalPacmanGame: React.FC<ExternalPacmanGameProps> = ({
     setGameState(engine.getGameState());
     setExternalState(engine.getExternalGameState());
     setStep(0);
+    setElapsedTime(0);
     setPlayerIdMap(new Map());
 
     callbacks.onGameStateChange?.('stopped');
@@ -345,6 +353,7 @@ export const ExternalPacmanGame: React.FC<ExternalPacmanGameProps> = ({
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            position: 'relative',
           }}
         >
           <GameBoard
@@ -352,7 +361,27 @@ export const ExternalPacmanGame: React.FC<ExternalPacmanGameProps> = ({
             cellSize={gameConfig.cellSize || 45}
             externalPlayers={externalPlayers}
             playerIdMap={playerIdMap}
+            elapsedTime={elapsedTime}
+            isRunning={isRunning}
           />
+          {isRunning && gameState.gameStartTime && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '10px',
+                right: '10px',
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                color: 'white',
+                padding: '8px 12px',
+                borderRadius: '5px',
+                fontSize: '14px',
+                fontWeight: 'bold',
+                zIndex: 1000,
+              }}
+            >
+              {Math.floor(elapsedTime / 1000)}초
+            </div>
+          )}
 
           {gameOverInfo.isOver && (
             <div

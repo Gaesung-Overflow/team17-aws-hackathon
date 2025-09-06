@@ -10,6 +10,7 @@ export class GameEngine {
   private gameState: GameState;
   private playerMovements: SmoothMovement[];
   private ghostMovement: SmoothMovement;
+  private baseGhostSpeed: number = 200;
 
   constructor(initialState: GameState) {
     this.playerEngines = initialState.players.map(() => new PlayerEngine());
@@ -19,6 +20,8 @@ export class GameEngine {
       eliminatedPlayers: initialState.eliminatedPlayers || [],
       rankings: initialState.rankings || [],
       gameStep: initialState.gameStep || 0,
+      gameStartTime: initialState.gameStartTime,
+      currentPhase: initialState.currentPhase || 0,
       playerNames:
         initialState.playerNames ||
         initialState.players.map((_, i) => `Player ${i + 1}`),
@@ -49,6 +52,9 @@ export class GameEngine {
   updateGame(): GameState {
     const currentTime = performance.now();
     this.gameState.gameStep++;
+
+    // 페이즈 체크 및 업데이트
+    this.updateGamePhase();
 
     // 논리적 위치로 이동 전 위치 저장
     const previousGhostPos = { ...this.ghostMovement.getPosition().logical };
@@ -165,7 +171,37 @@ export class GameEngine {
   }
 
   setGhostSpeed(speed: number): void {
-    this.ghostMovement.setSpeed(speed);
+    this.baseGhostSpeed = speed;
+    this.ghostMovement.setSpeed(speed + this.gameState.currentPhase);
+  }
+
+  private updateGamePhase(): void {
+    if (!this.gameState.gameStartTime) return;
+    
+    const elapsedTime = Date.now() - this.gameState.gameStartTime;
+    const elapsedSeconds = elapsedTime / 1000;
+    
+    let newPhase = 0;
+    if (elapsedSeconds >= 60) {
+      newPhase = 2;
+    } else if (elapsedSeconds >= 30) {
+      newPhase = 1;
+    }
+    
+    if (newPhase !== this.gameState.currentPhase) {
+      this.gameState.currentPhase = newPhase;
+      this.ghostMovement.setSpeed(this.baseGhostSpeed + newPhase);
+    }
+  }
+
+  getElapsedTime(): number {
+    if (!this.gameState.gameStartTime) return 0;
+    return Date.now() - this.gameState.gameStartTime;
+  }
+
+  startGame(): void {
+    this.gameState.gameStartTime = Date.now();
+    this.gameState.currentPhase = 0;
   }
 
   getGameState(): GameState {
@@ -203,6 +239,8 @@ export class GameEngine {
       eliminatedPlayers: [],
       rankings: [],
       gameStep: 0,
+      gameStartTime: undefined,
+      currentPhase: 0,
     };
     this.playerEngines = newState.players.map(() => new PlayerEngine());
     this.ghostEngine = new GhostEngine();

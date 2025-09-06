@@ -23,8 +23,8 @@ export const GamePage = () => {
   } | null>(null);
   const [gameSettings, setGameSettings] = useState({
     playerSpeedLevel: 5,
-    ghostSpeedLevel: 5,
-    ghostLevel: 3,
+    ghostSpeedLevel: 6,
+    ghostLevel: 4,
     selectedMapId: 'classic',
   });
   const [gameStarted] = useState(false);
@@ -42,8 +42,11 @@ export const GamePage = () => {
             id: data.playerId,
             name: data.playerName,
             emoji: data.emoji,
+            joinedAt: Date.now(),
           };
-          return [...prev, newPlayer];
+          return [...prev, newPlayer].sort(
+            (a, b) => (b.joinedAt || 0) - (a.joinedAt || 0),
+          );
         });
 
         setCommands((prev) => [
@@ -110,8 +113,13 @@ export const GamePage = () => {
       id: `player_${Date.now()}`,
       name: `플레이어 ${players.length + 1}`,
       emoji: ['🚀', '🎉', '🎆', '⭐'][players.length % 4],
+      joinedAt: Date.now(),
     };
-    setPlayers((prev) => [...prev, newPlayer]);
+    setPlayers((prev) =>
+      [...prev, newPlayer].sort(
+        (a, b) => (b.joinedAt || 0) - (a.joinedAt || 0),
+      ),
+    );
     setCommands((prev) => [...prev, { playerId: newPlayer.id, type: 'add' }]);
   };
 

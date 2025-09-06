@@ -26,7 +26,7 @@ export const MovementState = {
   MOVING: 'moving',
 } as const;
 
-export type MovementState = typeof MovementState[keyof typeof MovementState];
+export type MovementState = (typeof MovementState)[keyof typeof MovementState];
 
 export const DIRECTIONS = {
   UP: { x: 0, y: -1 },
@@ -57,6 +57,8 @@ export interface GameState {
   eliminatedPlayers: number[];
   rankings: PlayerRanking[];
   gameStep: number;
+  gameStartTime?: number;
+  currentPhase: number;
 }
 
 export interface MovementHistory {

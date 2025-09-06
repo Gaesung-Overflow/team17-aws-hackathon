@@ -1,14 +1,14 @@
-import { GameEngine } from './GameEngine';
-import { MapGenerator, MapInfo } from './MapGenerator';
-import { SmoothMovement } from './SmoothMovement';
-import { PlayerEngine } from './PlayerEngine';
-import type { GameState, Position } from './types';
 import type {
+  ExternalGameState,
   ExternalPlayer,
   PlayerCommand,
   PlayerEffect,
-  ExternalGameState,
 } from './external-types';
+import { GameEngine } from './GameEngine';
+import { MapGenerator, MapInfo } from './MapGenerator';
+import { PlayerEngine } from './PlayerEngine';
+import { SmoothMovement } from './SmoothMovement';
+import type { GameState, Position } from './types';
 import { isValidPosition } from './utils';
 
 export class ExternalGameEngine extends GameEngine {
@@ -19,6 +19,7 @@ export class ExternalGameEngine extends GameEngine {
   private maxPlayers: number = 10; // 기본 최대 플레이어 수
   private currentMapId: string = 'classic'; // 현재 선택된 맵 ID
   private gameStarted: boolean = false; // 게임 시작 여부
+  private eliminatedPlayerPositions = new Map<number, Position>(); // gameIndex -> 제거된 위치
 
   constructor(initialState?: Partial<GameState>) {
     const defaultState = {
@@ -30,7 +31,7 @@ export class ExternalGameEngine extends GameEngine {
       gameStep: 0,
       ...initialState,
     };
-    super(defaultState);
+    super(defaultState as GameState);
   }
 
   // 최대 플레이어 수 설정
@@ -248,6 +249,13 @@ export class ExternalGameEngine extends GameEngine {
         ([_, idx]) => idx === gameIndex,
       );
 
+      const isEliminated = gameState.eliminatedPlayers.includes(gameIndex);
+      // 제거된 플레이어의 경우 마지막 위치 사용
+      const playerPosition =
+        isEliminated && this.eliminatedPlayerPositions.has(gameIndex)
+          ? this.eliminatedPlayerPositions.get(gameIndex)!
+          : position;
+
       if (externalEntry) {
         const [id, _] = externalEntry;
         const info = this.playerInfo.get(id);
@@ -255,8 +263,8 @@ export class ExternalGameEngine extends GameEngine {
           id,
           name: info?.name || `Player ${gameIndex + 1}`,
           emoji: info?.emoji,
-          position,
-          isEliminated: gameState.eliminatedPlayers.includes(gameIndex),
+          position: playerPosition,
+          isEliminated,
           effects: this.playerEffects.get(gameIndex) || [],
         };
       } else {
@@ -265,8 +273,8 @@ export class ExternalGameEngine extends GameEngine {
           id: `player-${gameIndex}`,
           name: `Player ${gameIndex + 1}`,
           emoji: undefined,
-          position,
-          isEliminated: gameState.eliminatedPlayers.includes(gameIndex),
+          position: playerPosition,
+          isEliminated,
           effects: this.playerEffects.get(gameIndex) || [],
         };
       }
@@ -302,8 +310,35 @@ export class ExternalGameEngine extends GameEngine {
 
   // 게임 업데이트 오버라이드 (이팩트 처리 포함)
   updateGame(): GameState {
+    // 업데이트 전 제거된 플레이어 수 저장
+    const previousEliminatedCount =
+      this.getGameState().eliminatedPlayers.length;
+
     this.updateEffects();
     const result = super.updateGame();
+
+    // 새로 제거된 플레이어의 위치 저장
+    const currentEliminatedCount = result.eliminatedPlayers.length;
+    if (currentEliminatedCount > previousEliminatedCount) {
+      // 새로 제거된 플레이어들의 위치 저장
+      const newlyEliminated = result.eliminatedPlayers.slice(
+        previousEliminatedCount,
+      );
+      newlyEliminated.forEach((playerIndex) => {
+        const playerPosition = result.players[playerIndex];
+        this.eliminatedPlayerPositions.set(playerIndex, { ...playerPosition });
+
+        // 제거 이벤트 발생
+        const externalPlayerId = Array.from(
+          this.externalPlayerMap.entries(),
+        ).find(([_, idx]) => idx === playerIndex)?.[0];
+        if (externalPlayerId) {
+          const rank =
+            result.rankings.find((r) => r.playerId === playerIndex)?.rank || 0;
+          this.emit('playerEliminated', externalPlayerId, rank);
+        }
+      });
+    }
 
     // 이동 이벤트 발생
     this.externalPlayerMap.forEach((gameIndex, playerId) => {
@@ -419,11 +454,12 @@ export class ExternalGameEngine extends GameEngine {
     this.playerInfo.clear();
     this.playerEffects.clear();
     this.eventListeners.clear();
+    this.eliminatedPlayerPositions.clear(); // 제거된 플레이어 위치 정보 초기화
     this.gameStarted = false; // 게임 시작 상태 리셋
     this.currentMapId = 'classic'; // 맵 ID 리셋
 
     // 부모 클래스 리셋
-    this.resetGame(initialState);
+    this.resetGame(initialState as unknown as GameState);
   }
 
   // 새 맵에 맞게 플레이어 재배치

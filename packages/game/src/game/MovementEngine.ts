@@ -1,12 +1,15 @@
 import { Direction, MovementHistory, Position } from './types';
 import { getOppositeDirection, isSameDirection } from './utils';
+import { PathContinuity } from './PathContinuity';
 
 export abstract class MovementEngine {
   protected history: MovementHistory;
   protected lastDirection: Direction | null = null;
+  protected pathContinuity: PathContinuity;
 
   constructor(maxHistory: number = 4) {
     this.history = { positions: [], maxHistory };
+    this.pathContinuity = new PathContinuity();
   }
 
   protected updateHistory(pos: Position): void {
@@ -24,17 +27,17 @@ export abstract class MovementEngine {
     validDirections.forEach((dir) => {
       let weight = 1;
 
-      // 직진 우선
+      // 직진 우선 가중치 대폭 증가 + 경로 지속성 보너스
       if (this.lastDirection && isSameDirection(dir, this.lastDirection)) {
-        weight += 3;
+        weight += 15 + this.pathContinuity.getContinuityBonus();
       }
 
-      // 되돌아가기 회피
+      // 되돌아가기 거의 불가능하게 차단
       if (
         this.lastDirection &&
         isSameDirection(dir, getOppositeDirection(this.lastDirection))
       ) {
-        weight = 0.1;
+        weight = 0.001;
       }
 
       weights.set(dir, weight);

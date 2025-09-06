@@ -3,6 +3,7 @@ export interface ExternalPlayer {
   name?: string;
   emoji?: string;
   speed?: number;
+  joinedAt?: number;
 }
 
 export interface PlayerCommand {

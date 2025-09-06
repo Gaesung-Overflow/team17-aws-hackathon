@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { GameEngine, MapGenerator } from '../game';
+import { FloatingGameInfo } from './FloatingGameInfo';
 import { GameBoard } from './GameBoard';
 import { GameControls } from './GameControls';
-import { GameStats } from './GameStats';
 import { RankingBoard } from './RankingBoard';
-import { FloatingGameInfo } from './FloatingGameInfo';
 
 export const PacmanGame: React.FC = () => {
   const [gameEngine, setGameEngine] = useState<GameEngine>(() => {
@@ -23,6 +22,7 @@ export const PacmanGame: React.FC = () => {
       eliminatedPlayers: [],
       rankings: [],
       gameStep: 0,
+      currentPhase: 0,
     });
   });
 
@@ -32,6 +32,7 @@ export const PacmanGame: React.FC = () => {
   const [playerSpeed, setPlayerSpeed] = useState(200);
   const [ghostSpeed, setGhostSpeed] = useState(200);
   const [step, setStep] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   const gameOverInfo = gameEngine.isGameOver();
   const rankings = gameEngine.getRankings();
@@ -63,6 +64,11 @@ export const PacmanGame: React.FC = () => {
         const smoothState = gameEngine.updateSmoothMovement();
         setGameState(smoothState);
 
+        // 경과 시간 업데이트
+        if (gameEngine.getGameState().gameStartTime) {
+          setElapsedTime(gameEngine.getElapsedTime());
+        }
+
         animationFrame = requestAnimationFrame(gameLoop);
       }
     };
@@ -78,7 +84,10 @@ export const PacmanGame: React.FC = () => {
     };
   }, [isRunning, updateGame, gameOverInfo.isOver, gameEngine]);
 
-  const handleStart = () => setIsRunning(true);
+  const handleStart = () => {
+    gameEngine.startGame();
+    setIsRunning(true);
+  };
   const handleStop = () => setIsRunning(false);
 
   const handleReset = () => {
@@ -97,6 +106,7 @@ export const PacmanGame: React.FC = () => {
       eliminatedPlayers: [],
       rankings: [],
       gameStep: 0,
+      currentPhase: 0,
     });
     newEngine.setGhostLevel(ghostLevel);
     newEngine.setPlayerSpeed(playerSpeed);
@@ -105,6 +115,7 @@ export const PacmanGame: React.FC = () => {
     setGameState(newEngine.getGameState());
     setIsRunning(false);
     setStep(0);
+    setElapsedTime(0);
   };
 
   const handleGhostLevelChange = (level: number) => {
@@ -178,12 +189,41 @@ export const PacmanGame: React.FC = () => {
           alignItems: 'flex-start',
           justifyContent: 'center',
           width: '100%',
-          maxWidth: '1200px'
+          maxWidth: '1200px',
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <GameBoard gameState={gameState} cellSize={25} />
-          
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            position: 'relative',
+          }}
+        >
+          <GameBoard
+            gameState={gameState}
+            cellSize={25}
+            elapsedTime={elapsedTime}
+          />
+          {isRunning && gameState.gameStartTime && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '10px',
+                right: '10px',
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                color: 'white',
+                padding: '8px 12px',
+                borderRadius: '5px',
+                fontSize: '14px',
+                fontWeight: 'bold',
+                zIndex: 1000,
+              }}
+            >
+              {Math.floor(elapsedTime / 1000)}초
+            </div>
+          )}
+
           {gameOverInfo.isOver && (
             <div
               style={{
