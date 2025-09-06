@@ -98,7 +98,6 @@ export const PlayerPage = () => {
           style={{
             fontSize: '2rem',
             marginBottom: '10px',
-            animation: 'bounce 2s infinite',
           }}
         >
           🎮
