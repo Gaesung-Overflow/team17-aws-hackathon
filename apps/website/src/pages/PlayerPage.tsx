@@ -11,14 +11,14 @@ export const PlayerPage = () => {
 
   const { sendPlayerAction, onMessage, isConnected } = useWebSocket();
   const [gameState, setGameState] = useState<
-    'waiting' | 'playing' | 'eliminated' | 'finished'
+    'waiting' | 'running' | 'eliminated' | 'finished'
   >('waiting');
 
   useEffect(() => {
     onMessage((data) => {
       if (data.type === 'gameStateUpdate') {
         console.log('게임 상태 업데이트:', data.state);
-        setGameState(data.state);
+        setGameState(data.state ?? 'waiting');
       }
     });
   }, [onMessage]);
@@ -75,7 +75,7 @@ export const PlayerPage = () => {
         </div>
       )}
 
-      {gameState === 'playing' && (
+      {gameState === 'running' && (
         <div>
           <h2>게임 진행중</h2>
           <div

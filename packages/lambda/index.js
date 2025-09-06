@@ -65,7 +65,7 @@ exports.handler = async (event) => {
         console.log('Message from:', connectionId);
         const body = JSON.parse(event.body || '{}');
 
-        if (body.type !== 'gameStateUpdate') {
+        if (body.type === 'gameStateUpdate') {
           const roomMembers = await dynamodb.send(
             new ScanCommand({
               TableName: tableName,
