@@ -21,6 +21,9 @@ exports.handler = async (event) => {
   const tableName = 'websocket-connections';
 
   try {
+    const apiGateway = new ApiGatewayManagementApiClient({
+      endpoint: `https://${domainName}/${stage}`,
+    });
     switch (routeKey) {
       case '$connect':
         console.log('Connect:', connectionId);
@@ -61,9 +64,37 @@ exports.handler = async (event) => {
       default:
         console.log('Message from:', connectionId);
         const body = JSON.parse(event.body || '{}');
-        const apiGateway = new ApiGatewayManagementApiClient({
-          endpoint: `https://${domainName}/${stage}`,
-        });
+
+        if (body.type !== 'gameStateUpdate') {
+          const roomMembers = await dynamodb.send(
+            new ScanCommand({
+              TableName: tableName,
+              FilterExpression: 'roomId = :roomId',
+              ExpressionAttributeValues: { ':roomId': body.roomId },
+            }),
+          );
+
+          const message = {
+            type: 'gameStateUpdate',
+            state: body.state,
+            roomId: body.roomId,
+          };
+          const promises = roomMembers.Items.map(
+            async ({ connectionId: id }) => {
+              try {
+                await apiGateway.send(
+                  new PostToConnectionCommand({
+                    ConnectionId: id,
+                    Data: JSON.stringify(message),
+                  }),
+                );
+              } catch (error) {
+                console.error(`Error sending messages to ${id}:`, error);
+              }
+            },
+          );
+          await Promise.all(promises);
+        }
 
         // joinRoom으로 방 입장 처리
         if (body.type === 'joinRoom') {

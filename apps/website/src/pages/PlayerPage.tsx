@@ -17,6 +17,7 @@ export const PlayerPage = () => {
   useEffect(() => {
     onMessage((data) => {
       if (data.type === 'gameStateUpdate') {
+        console.log('게임 상태 업데이트:', data.state);
         setGameState(data.state);
       }
     });
@@ -41,11 +42,13 @@ export const PlayerPage = () => {
       }}
     >
       <div style={{ marginBottom: '30px' }}>
-        <h1>🎮 게임 컨트롤</h1>
-        <div style={{ fontSize: '14px', color: '#666' }}>
+        <h1>🎮</h1>
+        <h1>컨트롤러</h1>
+        <div style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
           <div>방: {roomId}</div>
           <div>플레이어: {playerName}</div>
           <div>ID: {playerId}</div>
+          <br />
           <div
             style={{
               color: isConnected ? '#28a745' : '#dc3545',
@@ -66,7 +69,9 @@ export const PlayerPage = () => {
       {gameState === 'waiting' && (
         <div>
           <h2>게임 시작 대기중...</h2>
-          <p>방장이 게임을 시작할 때까지 기다려주세요</p>
+          <br />
+          <p>방장이 게임을 시작할 때까지</p>
+          <p>기다려주세요</p>
         </div>
       )}
 

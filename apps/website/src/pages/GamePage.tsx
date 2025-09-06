@@ -122,6 +122,17 @@ export const GamePage = () => {
     onGameEnd: (rankings) => {
       console.log('게임 종료:', rankings);
     },
+    onGameStateChange: (state) => {
+      console.log('게임 상태 변경:', state);
+      sendMessage({ type: 'gameStateUpdate', state, roomId });
+
+      if (state === 'running') {
+        setToast({
+          message: '게임이 시작되었습니다!',
+          type: 'info',
+        });
+      }
+    },
     onPlayerJoinFailed: (_, error) => {
       setToast({
         message: error.message,
