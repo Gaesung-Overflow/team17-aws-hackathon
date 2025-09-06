@@ -1,12 +1,13 @@
 import { ExternalPacmanGame } from 'game';
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import ConfettiExplosion from 'react-confetti-explosion';
 import { useSearchParams } from 'react-router-dom';
-import { useWebSocket } from '../hooks/useWebSocket';
 import '../App.css';
-import '../styles/retro-ui.css';
-import { Toast } from '../components/Toast';
-import { QRCodeDisplay } from '../components/QRCodeDisplay';
 import { EmojiAnimation } from '../components/EmojiAnimation';
+import { QRCodeDisplay } from '../components/QRCodeDisplay';
+import { Toast } from '../components/Toast';
+import { useWebSocket } from '../hooks/useWebSocket';
+import '../styles/retro-ui.css';
 import type { ExternalPlayer, GameCallbacks, PlayerCommand } from '../types';
 
 export const GamePage = () => {
@@ -31,75 +32,82 @@ export const GamePage = () => {
   });
   const [gameStarted] = useState(false);
   const [cheerEmojis, setCheerEmojis] = useState<string[]>([]);
+  const [gameFinished, setGameFinished] = useState(false);
+  const [winners, setWinners] = useState<
+    Array<{ id: string; name?: string; emoji?: string; rank: number }>
+  >([]);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const speedLevelToMs = (level: number) => 500 - (level - 1) * 50;
   const MAX_PLAYERS = 10;
 
-  useEffect(() => {
-    const cleanup = onMessage((data) => {
-      console.log('GamePage received message:', data);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleMessage = useCallback((data: any) => {
+    console.log('GamePage received message:', data);
 
-      if (data.type === 'playerJoined') {
-        setPlayers((prev) => {
-          const newPlayer: ExternalPlayer = {
-            id: data.playerId,
-            name: data.playerName,
-            emoji: data.emoji,
-            joinedAt: Date.now(),
-          };
-          return [...prev, newPlayer].sort(
-            (a, b) => (b.joinedAt || 0) - (a.joinedAt || 0),
-          );
-        });
+    if (data.type === 'playerJoined') {
+      setPlayers((prev) => {
+        const newPlayer: ExternalPlayer = {
+          id: data.playerId,
+          name: data.playerName,
+          emoji: data.emoji,
+          joinedAt: Date.now(),
+        };
+        return [...prev, newPlayer].sort(
+          (a, b) => (b.joinedAt || 0) - (a.joinedAt || 0),
+        );
+      });
 
+      setCommands((prev) => [
+        ...prev,
+        { playerId: data.playerId, type: 'add' },
+      ]);
+
+      setToast({
+        message: `${data.playerName}님이 참가했습니다!`,
+        type: 'success',
+      });
+    }
+
+    if (data.type === 'playerAction') {
+      if (data.action === 'cheer') {
+        setCheerEmojis([data.emoji]);
+        setTimeout(() => setCheerEmojis([]), 100);
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const actionMap: Record<string, any> = {
+        up: { type: 'move', direction: 'up' },
+        down: { type: 'move', direction: 'down' },
+        left: { type: 'move', direction: 'left' },
+        right: { type: 'move', direction: 'right' },
+        boost: { type: 'boost', duration: 3000, speedMultiplier: 2 },
+      };
+
+      const gameAction = actionMap[data.action];
+      if (gameAction) {
         setCommands((prev) => [
           ...prev,
-          { playerId: data.playerId, type: 'add' },
+          {
+            playerId: data.playerId,
+            ...gameAction,
+          },
         ]);
-
-        setToast({
-          message: `${data.playerName}님이 참가했습니다!`,
-          type: 'success',
-        });
       }
+    }
 
-      if (data.type === 'playerAction') {
-        if (data.action === 'cheer') {
-          setCheerEmojis([data.emoji]);
-          setTimeout(() => setCheerEmojis([]), 100);
-        }
+    if (data.type === 'testResponse') {
+      setToast({
+        message: data.message,
+        type: 'success',
+      });
+    }
+  }, []);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const actionMap: Record<string, any> = {
-          up: { type: 'move', direction: 'up' },
-          down: { type: 'move', direction: 'down' },
-          left: { type: 'move', direction: 'left' },
-          right: { type: 'move', direction: 'right' },
-          boost: { type: 'boost', duration: 3000, speedMultiplier: 2 },
-        };
-
-        const gameAction = actionMap[data.action];
-        if (gameAction) {
-          setCommands((prev) => [
-            ...prev,
-            {
-              playerId: data.playerId,
-              ...gameAction,
-            },
-          ]);
-        }
-      }
-
-      if (data.type === 'testResponse') {
-        setToast({
-          message: data.message,
-          type: 'success',
-        });
-      }
-    }) as () => void;
-
-    return cleanup;
-  }, [onMessage]);
+  useEffect(() => {
+    const cleanup = onMessage(handleMessage);
+    return cleanup as () => void;
+  }, [onMessage, handleMessage]);
 
   // 방 입장 처리
   useEffect(() => {
@@ -131,61 +139,70 @@ export const GamePage = () => {
   //   setCommands((prev) => [...prev, { playerId: newPlayer.id, type: 'add' }]);
   // };
 
-  const callbacks: GameCallbacks = {
-    onPlayerEliminated: (playerId, rank) => {
-      console.log(`플레이어 ${playerId} 탈락 - 순위: ${rank}`);
-    },
-    onGameEnd: (rankings) => {
-      const winners = rankings
-        .map((r) => {
-          return {
-            ...players.find((pl) => pl.id === r.playerId),
-            rank: r.rank,
-          };
-        })
-        .filter((p) => p);
-      console.log('게임 종료:', winners);
-      sendMessage({
-        type: 'gameStateUpdate',
-        state: 'finished',
-        roomId,
-        winners,
-      });
-    },
-    onGameStateChange: (state) => {
-      console.log('게임 상태 변경:', state);
-      sendMessage({ type: 'gameStateUpdate', state, roomId });
+  const callbacks: GameCallbacks = useMemo(
+    () => ({
+      onPlayerEliminated: (playerId, rank) => {
+        console.log(`플레이어 ${playerId} 탈락 - 순위: ${rank}`);
+      },
+      onGameEnd: (rankings) => {
+        const gameWinners = rankings
+          .map((r) => {
+            const player = players.find((pl) => pl.id === r.playerId);
+            return {
+              id: r.playerId,
+              name: player?.name,
+              emoji: player?.emoji,
+              rank: r.rank,
+            };
+          })
+          .filter((p) => p);
+        console.log('게임 종료:', gameWinners);
+        setWinners(gameWinners);
+        setGameFinished(true);
+        setShowConfetti(true);
+        sendMessage({
+          type: 'gameStateUpdate',
+          state: 'finished',
+          roomId,
+          winners: gameWinners,
+        });
+      },
+      onGameStateChange: (state) => {
+        console.log('게임 상태 변경:', state);
+        sendMessage({ type: 'gameStateUpdate', state, roomId });
 
-      if (state === 'running') {
+        if (state === 'running') {
+          setToast({
+            message: '게임이 시작되었습니다!',
+            type: 'info',
+          });
+        }
+      },
+      onPlayerJoinFailed: (_, error) => {
         setToast({
-          message: '게임이 시작되었습니다!',
+          message: error.message,
+          type: 'error',
+        });
+      },
+      onGameReset: () => {
+        setPlayers([]);
+        setCommands([]);
+        setToast({
+          message: '게임이 리셋되었습니다.',
           type: 'info',
         });
-      }
-    },
-    onPlayerJoinFailed: (_, error) => {
-      setToast({
-        message: error.message,
-        type: 'error',
-      });
-    },
-    onGameReset: () => {
-      setPlayers([]);
-      setCommands([]);
-      setToast({
-        message: '게임이 리셋되었습니다.',
-        type: 'info',
-      });
-    },
-    onConfigChange: (config) => {
-      setGameSettings({
-        playerSpeedLevel: config.playerSpeedLevel,
-        ghostSpeedLevel: config.ghostSpeedLevel,
-        ghostLevel: config.ghostLevel,
-        selectedMapId: config.selectedMapId,
-      });
-    },
-  };
+      },
+      onConfigChange: (config) => {
+        setGameSettings({
+          playerSpeedLevel: config.playerSpeedLevel,
+          ghostSpeedLevel: config.ghostSpeedLevel,
+          ghostLevel: config.ghostLevel,
+          selectedMapId: config.selectedMapId,
+        });
+      },
+    }),
+    [players, sendMessage, roomId],
+  );
 
   return (
     <div className="retro-game-page" style={{ padding: '20px' }}>
@@ -301,9 +318,9 @@ export const GamePage = () => {
           externalPlayers={players}
           playerCommands={commands}
           callbacks={callbacks}
-          onCommandProcessed={(index: number) => {
+          onCommandProcessed={useCallback((index: number) => {
             setCommands((prev) => prev.filter((_, i) => i !== index));
-          }}
+          }, [])}
           autoStart={false}
           gameConfig={{
             maxPlayers: MAX_PLAYERS,
@@ -324,6 +341,115 @@ export const GamePage = () => {
       )}
 
       <EmojiAnimation emojis={cheerEmojis} />
+
+      {gameFinished && winners.length > 0 && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background:
+              'radial-gradient(circle at 50% 50%, rgba(0, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0.95) 70%)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          {showConfetti && (
+            <ConfettiExplosion
+              particleCount={200}
+              duration={3000}
+              colors={['#00ff41', '#00ffff', '#ff0080', '#ffff00']}
+              onComplete={() => setShowConfetti(false)}
+              zIndex={1001}
+            />
+          )}
+
+          <button
+            onClick={() => setGameFinished(false)}
+            className="retro-button"
+            style={{
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              width: '50px',
+              height: '50px',
+              borderRadius: '50%',
+              fontSize: '20px',
+              padding: 0,
+            }}
+          >
+            ✕
+          </button>
+
+          <div
+            className="retro-font neon-glow-cyan neon-pulse"
+            style={{
+              textAlign: 'center',
+              fontSize: '48px',
+              marginBottom: '40px',
+              textTransform: 'uppercase',
+            }}
+          >
+            🎉 GAME OVER 🎉
+          </div>
+
+          <div
+            className="retro-panel"
+            style={{ padding: '30px', minWidth: '500px' }}
+          >
+            <h3
+              className="retro-font neon-glow-yellow"
+              style={{
+                textAlign: 'center',
+                marginBottom: '30px',
+                fontSize: '24px',
+              }}
+            >
+              FINAL RANKINGS
+            </h3>
+            <div
+              style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}
+            >
+              {winners.slice(0, 3).map((winner) => (
+                <div
+                  key={winner.id}
+                  className="arcade-info-panel"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '20px',
+                    fontSize: '24px',
+                    fontWeight: 'bold',
+                    padding: '20px',
+                    border: `2px solid ${winner.rank === 1 ? 'var(--neon-yellow)' : winner.rank === 2 ? 'var(--neon-cyan)' : 'var(--neon-pink)'}`,
+                    boxShadow: `0 0 20px ${winner.rank === 1 ? 'rgba(255, 255, 0, 0.5)' : winner.rank === 2 ? 'rgba(0, 255, 255, 0.5)' : 'rgba(255, 0, 128, 0.5)'}`,
+                    justifyContent: 'center',
+                  }}
+                >
+                  <span style={{ fontSize: '40px' }}>
+                    {winner.rank === 1 ? '🥇' : winner.rank === 2 ? '🥈' : '🥉'}
+                  </span>
+                  <span
+                    className={`retro-font ${winner.rank === 1 ? 'neon-glow-yellow' : winner.rank === 2 ? 'neon-glow-cyan' : 'neon-glow-pink'}`}
+                  >
+                    {winner.rank} PLACE
+                  </span>
+                  <span style={{ fontSize: '40px' }}>{winner.emoji}</span>
+                  <span className="retro-font neon-glow-green">
+                    {winner.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
