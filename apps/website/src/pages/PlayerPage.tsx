@@ -106,23 +106,6 @@ export const PlayerPage = () => {
 
           <div style={{ marginTop: '30px' }}>
             <button
-              onClick={() => sendAction('boost')}
-              style={{
-                padding: '15px 30px',
-                fontSize: '16px',
-                backgroundColor: '#ffc107',
-                color: 'black',
-                border: 'none',
-                borderRadius: '10px',
-                width: '100%',
-              }}
-            >
-              🚀 부스터 사용
-            </button>
-          </div>
-
-          <div style={{ marginTop: '30px' }}>
-            <button
               onClick={() => sendAction('cheer')}
               style={{
                 padding: '15px 30px',
