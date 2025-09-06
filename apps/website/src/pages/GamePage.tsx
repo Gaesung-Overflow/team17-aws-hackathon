@@ -138,7 +138,10 @@ export const GamePage = () => {
     onGameEnd: (rankings) => {
       const winners = rankings
         .map((r) => {
-          return players.find((pl) => pl.id === r.playerId);
+          return {
+            ...players.find((pl) => pl.id === r.playerId),
+            rank: r.rank,
+          };
         })
         .filter((p) => p);
       console.log('게임 종료:', winners);

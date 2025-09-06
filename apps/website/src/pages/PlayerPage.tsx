@@ -22,14 +22,14 @@ export const PlayerPage = () => {
     onMessage((data) => {
       if (data.type === 'gameStateUpdate') {
         console.log('게임 상태 업데이트:', data);
-        setGameState(data.state ?? 'waiting');
         if (data.state === 'finished' && data.winners) {
-          data.winners.forEach((winner: { playerId: string; rank: number }) => {
-            if (winner.playerId === playerId) {
+          data.winners.forEach((winner: { id: string; rank: number }) => {
+            if (winner.id === playerId) {
               setMyRank(winner.rank);
             }
           });
         }
+        setGameState(data.state ?? 'waiting');
       }
       if (data.type === 'playerAction') {
         if (data.action === 'cheer') {
