@@ -251,36 +251,36 @@ button:focus-visible {
 .neon-glow-green {
   color: var(--text-primary);
   text-shadow:
-    0 0 5px var(--neon-green),
-    0 0 10px var(--neon-green);
+    0 0 2px var(--neon-green),
+    0 0 4px var(--neon-green);
 }
 
 .neon-glow-cyan {
   color: var(--neon-cyan);
   text-shadow:
-    0 0 5px var(--neon-cyan),
-    0 0 10px var(--neon-cyan);
+    0 0 2px var(--neon-cyan),
+    0 0 4px var(--neon-cyan);
 }
 
 .neon-glow-pink {
   color: var(--neon-pink);
   text-shadow:
-    0 0 5px var(--neon-pink),
-    0 0 10px var(--neon-pink);
+    0 0 2px var(--neon-pink),
+    0 0 4px var(--neon-pink);
 }
 
 .neon-glow-red {
   color: var(--neon-red);
   text-shadow:
-    0 0 5px var(--neon-red),
-    0 0 10px var(--neon-red);
+    0 0 2px var(--neon-red),
+    0 0 4px var(--neon-red);
 }
 
 .neon-glow-yellow {
   color: var(--neon-yellow);
   text-shadow:
-    0 0 5px var(--neon-yellow),
-    0 0 10px var(--neon-yellow);
+    0 0 2px var(--neon-yellow),
+    0 0 4px var(--neon-yellow);
 }
 
 .retro-text {
@@ -327,13 +327,13 @@ button:focus-visible {
 @keyframes neonPulse {
   from {
     text-shadow:
-      0 0 3px var(--neon-cyan),
-      0 0 5px var(--neon-cyan);
+      0 0 2px var(--neon-cyan),
+      0 0 3px var(--neon-cyan);
   }
   to {
     text-shadow:
-      0 0 4px var(--neon-cyan),
-      0 0 6px var(--neon-cyan);
+      0 0 3px var(--neon-cyan),
+      0 0 4px var(--neon-cyan);
   }
 }
 
