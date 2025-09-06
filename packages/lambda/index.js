@@ -78,11 +78,11 @@ exports.handler = async (event) => {
           console.log(`User ${connectionId} joined room ${body.roomId}`);
           return { statusCode: 200 };
         }
-        
+
         // createRoom 처리 - 방장이 방을 생성할 때
         if (body.type === 'createRoom') {
           console.log(`Room ${body.roomId} created by ${connectionId}`);
-          
+
           // 방장을 방에 입장시킴
           await dynamodb.send(
             new UpdateCommand({
@@ -93,25 +93,26 @@ exports.handler = async (event) => {
             }),
           );
           console.log(`Host ${connectionId} joined room ${body.roomId}`);
-          
+
           // 방장에게 방 생성 성공 알림
           await apiGateway.send(
             new PostToConnectionCommand({
               ConnectionId: connectionId,
-              Data: JSON.stringify({ 
-                type: 'roomCreated', 
-                roomId: body.roomId, 
-                roomName: body.roomName 
+              Data: JSON.stringify({
+                type: 'roomCreated',
+                roomId: body.roomId,
+                roomName: body.roomName,
+                connectionId,
               }),
             }),
           );
           return { statusCode: 200 };
         }
-        
+
         // joinGame 처리 - 플레이어가 게임에 참가할 때
         if (body.type === 'joinGame') {
           console.log(`Processing joinGame: ${JSON.stringify(body)}`);
-          
+
           try {
             // 먼저 방에 입장
             await dynamodb.send(
@@ -123,7 +124,7 @@ exports.handler = async (event) => {
               }),
             );
             console.log(`Player ${body.playerName} joined room ${body.roomId}`);
-            
+
             // 방의 모든 멤버 조회 (새로 입장한 플레이어 포함)
             const roomMembers = await dynamodb.send(
               new ScanCommand({
@@ -132,81 +133,90 @@ exports.handler = async (event) => {
                 ExpressionAttributeValues: { ':roomId': body.roomId },
               }),
             );
-            
-            console.log(`Found ${roomMembers.Items.length} members in room ${body.roomId}:`, roomMembers.Items);
-            
+
+            console.log(
+              `Found ${roomMembers.Items.length} members in room ${body.roomId}:`,
+              roomMembers.Items,
+            );
+
             // 모든 방 멤버에게 joinGameSuccess와 playerJoined 메시지 브로드캐스트
-            const successMessage = { 
-              type: 'joinGameSuccess', 
+            const successMessage = {
+              type: 'joinGameSuccess',
               playerId: body.playerId,
               playerName: body.playerName,
-              roomId: body.roomId 
+              roomId: body.roomId,
+              roomMembers: roomMembers.Items,
             };
-            
+
             const joinMessage = {
               type: 'playerJoined',
               playerId: body.playerId,
               playerName: body.playerName,
               roomId: body.roomId,
             };
-            
-            console.log('Broadcasting messages to all members:', { successMessage, joinMessage });
-            
-            const promises = roomMembers.Items.map(async ({ connectionId: id }) => {
-              try {
-                console.log(`Sending messages to connection: ${id}`);
-                
-                // joinGameSuccess 전송
-                await apiGateway.send(
-                  new PostToConnectionCommand({
-                    ConnectionId: id,
-                    Data: JSON.stringify(successMessage),
-                  }),
-                );
-                
-                // playerJoined 전송
-                await apiGateway.send(
-                  new PostToConnectionCommand({
-                    ConnectionId: id,
-                    Data: JSON.stringify(joinMessage),
-                  }),
-                );
-                
-                console.log(`Successfully sent both messages to ${id}`);
-              } catch (err) {
-                console.log('Send error to', id, ':', err);
-                if (err.$metadata?.httpStatusCode === 410) {
-                  console.log(`Connection ${id} is stale, removing from DB`);
-                  await dynamodb.send(
-                    new DeleteCommand({
-                      TableName: tableName,
-                      Key: { connectionId: id },
+
+            console.log('Broadcasting messages to all members:', {
+              successMessage,
+              joinMessage,
+            });
+
+            const promises = roomMembers.Items.map(
+              async ({ connectionId: id }) => {
+                try {
+                  console.log(`Sending messages to connection: ${id}`);
+
+                  // joinGameSuccess 전송
+                  await apiGateway.send(
+                    new PostToConnectionCommand({
+                      ConnectionId: id,
+                      Data: JSON.stringify(successMessage),
                     }),
                   );
+
+                  // playerJoined 전송
+                  await apiGateway.send(
+                    new PostToConnectionCommand({
+                      ConnectionId: id,
+                      Data: JSON.stringify(joinMessage),
+                    }),
+                  );
+
+                  console.log(`Successfully sent both messages to ${id}`);
+                } catch (err) {
+                  console.log('Send error to', id, ':', err);
+                  if (err.$metadata?.httpStatusCode === 410) {
+                    console.log(`Connection ${id} is stale, removing from DB`);
+                    await dynamodb.send(
+                      new DeleteCommand({
+                        TableName: tableName,
+                        Key: { connectionId: id },
+                      }),
+                    );
+                  }
                 }
-              }
-            });
-            
+              },
+            );
+
             await Promise.all(promises);
             return { statusCode: 200 };
           } catch (error) {
             console.error('joinGame error:', error);
-            
+
             // 에러 발생 시 클라이언트에게 알림
             try {
               await apiGateway.send(
                 new PostToConnectionCommand({
                   ConnectionId: connectionId,
-                  Data: JSON.stringify({ 
-                    type: 'joinGameError', 
-                    error: error.message 
+                  Data: JSON.stringify({
+                    type: 'joinGameError',
+                    error: error.message,
                   }),
                 }),
               );
             } catch (sendError) {
               console.error('Failed to send error message:', sendError);
             }
-            
+
             return { statusCode: 500 };
           }
         }
@@ -225,7 +235,7 @@ exports.handler = async (event) => {
           console.log(`User ${connectionId} not in any room`);
           return { statusCode: 200 };
         }
-        
+
         console.log(`Broadcasting message to room ${userRoomId}:`, body);
 
         // 같은 방의 모든 사용자에게 메시지 브로드캐스트

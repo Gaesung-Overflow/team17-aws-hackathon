@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useWebSocket } from '../hooks/useWebSocket';
 import '../App.css';
-import { ChatContainer } from '../chat/Container';
 import { Toast } from '../components/Toast';
 import { QRCodeDisplay } from '../components/QRCodeDisplay';
 import type { ExternalPlayer, GameCallbacks, PlayerCommand } from '../types';
@@ -394,7 +393,6 @@ export const GamePage = () => {
           ghostLevel: gameSettings.ghostLevel,
         }}
       />
-      <ChatContainer />
       {toast && (
         <Toast
           message={toast.message}

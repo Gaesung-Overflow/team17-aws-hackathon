@@ -24,7 +24,12 @@ export const JoinPage = () => {
   }, [navigate, onMessage, roomId, playerName]);
 
   const handleJoinGame = () => {
-    if (!playerName.trim() || !isConnected || !roomId) return;
+    if (!playerName.trim() || !isConnected || !roomId) {
+      alert(
+        '유효한 이름과 방 ID가 필요합니다. 또는 서버에 연결되어 있지 않습니다.',
+      );
+      return;
+    }
     joinGame(roomId, playerName.trim());
     // 서버 응답을 기다림 (useEffect에서 처리)
   };

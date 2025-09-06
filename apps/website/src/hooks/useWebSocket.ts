@@ -36,12 +36,13 @@ export const useWebSocket = () => {
       });
       setIsConnected(false);
 
-      // 정상 종료가 아닌 경우만 재연결
-      if (!event.wasClean && !reconnectTimeoutRef.current) {
+      // 정상 종료(1000)가 아닌 경우만 재연결
+      if (event.code !== 1000 && !reconnectTimeoutRef.current) {
+        console.log('비정상 연결 종료, 재연결 시도...');
         reconnectTimeoutRef.current = setTimeout(() => {
           console.log('재연결 시도 중...');
           connect();
-        }, 3000);
+        }, 1000); // 재연결 시간을 1초로 단축
       }
     };
 
@@ -66,11 +67,13 @@ export const useWebSocket = () => {
     connect();
 
     return () => {
+      setIsConnected(false);
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }
       if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-        ws.current.close();
+        // NOTE: 컴포넌트 이동시 소켓이 끊어지면 방 정보도 잃으므로 제외
+        // ws.current.close();
       }
     };
   }, [connect]);
@@ -118,8 +121,6 @@ export const useWebSocket = () => {
   const createRoom = useCallback(
     (roomName: string) => {
       const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-      // 먼저 방에 입장
-      sendMessage({ type: 'joinRoom', roomId });
       // 그 다음 createRoom 메시지 브로드캐스트
       sendMessage({ type: 'createRoom', roomId, roomName });
       return roomId;

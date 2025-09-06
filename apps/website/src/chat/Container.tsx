@@ -31,7 +31,7 @@ export const ChatContainer = () => {
 
   useEffect(() => {
     ws.current = new WebSocket(
-      'wss://i9kpqjsmxa.execute-api.us-east-1.amazonaws.com/prod',
+      'wss://mbizopkcbc.execute-api.us-east-1.amazonaws.com/prod',
     );
 
     ws.current.onopen = () => {
@@ -63,6 +63,7 @@ export const ChatContainer = () => {
         ws.current.close();
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
