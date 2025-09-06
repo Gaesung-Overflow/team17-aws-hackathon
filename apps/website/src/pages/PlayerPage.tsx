@@ -59,90 +59,106 @@ export const PlayerPage = () => {
       }}
     >
       <div style={{ marginBottom: '30px' }}>
-        <h1>🎮</h1>
-        <h1>컨트롤러</h1>
-        <div style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
-          <div>방: {roomId}</div>
-          <div>플레이어: {playerName}</div>
-          <div>ID: {playerId}</div>
-          <br />
-          <div
-            style={{
-              color: isConnected ? '#28a745' : '#dc3545',
-              marginTop: '5px',
-            }}
-          >
-            ● {isConnected ? '연결됨' : '연결 끊어짐'}
-          </div>
+        <div
+          className="neon-glow-green"
+          style={{ fontSize: '2rem', marginBottom: '10px' }}
+        >
+          🎮
         </div>
-
-        <div style={{ marginTop: '20px' }}>
-          <div style={{ fontSize: '16px', fontWeight: 'bold' }}>
-            내 이모지: {initialEmoji}
+        <h2
+          className="neon-glow-green retro-font"
+          style={{ fontSize: '1.2rem', marginBottom: '15px' }}
+        >
+          CONTROLLER
+        </h2>
+        <div
+          className="retro-text"
+          style={{ fontSize: '14px', marginTop: '10px' }}
+        >
+          <div>ROOM: {roomId}</div>
+          <div>PLAYER: {playerName}</div>
+          <div>EMOJI: {initialEmoji}</div>
+          <div style={{ marginTop: '10px' }}>
+            {isConnected ? '🟢 ONLINE' : '🔴 OFFLINE'}
           </div>
         </div>
       </div>
 
       {gameState === 'waiting' && (
         <div>
-          <h2>게임 시작 대기중...</h2>
-          <br />
-          <p>방장이 게임을 시작할 때까지</p>
-          <p>기다려주세요</p>
+          <h3
+            className="neon-glow-cyan retro-font"
+            style={{ fontSize: '1.1rem', marginBottom: '20px' }}
+          >
+            WAITING FOR GAME...
+          </h3>
+          <p className="retro-text" style={{ marginBottom: '10px' }}>
+            방장이 게임을 시작할 때까지
+          </p>
+          <p className="retro-text" style={{ marginBottom: '30px' }}>
+            기다려주세요
+          </p>
 
-          <div style={{ marginTop: '30px' }}>
-            <button
-              onClick={() => sendAction('cheer')}
-              style={{
-                padding: '15px 30px',
-                fontSize: '16px',
-                backgroundColor: '#ffc107',
-                color: 'black',
-                border: 'none',
-                borderRadius: '10px',
-                width: '100%',
-              }}
-            >
-              가즈아 {initialEmoji}
-            </button>
-          </div>
+          <button
+            onClick={() => sendAction('cheer')}
+            className="retro-button"
+            style={{
+              fontSize: '16px',
+              padding: '15px 30px',
+              width: '100%',
+            }}
+          >
+            CHEER {initialEmoji}
+          </button>
         </div>
       )}
 
       {gameState === 'running' && (
         <div>
-          <h2>게임 진행중</h2>
+          <h3
+            className="neon-glow-green retro-font"
+            style={{ fontSize: '1.1rem', marginBottom: '30px' }}
+          >
+            GAME RUNNING
+          </h3>
 
-          <div style={{ marginTop: '30px' }}>
-            <button
-              onClick={() => sendAction('cheer')}
-              style={{
-                padding: '15px 30px',
-                fontSize: '16px',
-                backgroundColor: '#ffc107',
-                color: 'black',
-                border: 'none',
-                borderRadius: '10px',
-                width: '100%',
-              }}
-            >
-              응원하기 {initialEmoji}
-            </button>
-          </div>
+          <button
+            onClick={() => sendAction('cheer')}
+            className="retro-button"
+            style={{
+              fontSize: '16px',
+              padding: '15px 30px',
+              width: '100%',
+            }}
+          >
+            CHEER {initialEmoji}
+          </button>
         </div>
       )}
 
       {gameState === 'eliminated' && (
         <div>
-          <h2>😵 탈락!</h2>
-          <p>다음 게임을 기다려주세요</p>
+          <h3
+            className="neon-glow-red retro-font"
+            style={{ fontSize: '1.1rem', marginBottom: '20px' }}
+          >
+            😵 ELIMINATED!
+          </h3>
+          <p className="retro-text">다음 게임을 기다려주세요</p>
         </div>
       )}
 
       {gameState === 'finished' && (
         <div>
-          <h2>🎉 게임 종료!</h2>
-          <p>새로운 게임을 기다려주세요</p>
+          <h3
+            className="neon-glow-yellow retro-font"
+            style={{ fontSize: '1.1rem', marginBottom: '20px' }}
+          >
+            🎉 GAME FINISHED!
+          </h3>
+          <p className="retro-text" style={{ marginBottom: '20px' }}>
+            새로운 게임을 기다려주세요
+          </p>
           <VictoryAnimation myRank={myRank} />
         </div>
       )}

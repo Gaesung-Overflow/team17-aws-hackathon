@@ -37,31 +37,68 @@ export const JoinPage = () => {
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '400px', margin: '0 auto' }}>
-      <h1>게임 참가</h1>
-      <p>방 ID: {roomId}</p>
+    <div
+      style={{
+        padding: '40px 20px',
+        textAlign: 'center',
+        maxWidth: '600px',
+        margin: '0 auto',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+      }}
+    >
+      <div style={{ marginBottom: '40px' }}>
+        <h1 className="retro-title neon-pulse">JOIN GAME</h1>
+        <h2
+          className="neon-glow-green retro-font"
+          style={{ fontSize: '1.2rem', marginTop: '20px' }}
+        >
+          ROOM: {roomId}
+        </h2>
+        <p
+          className="retro-text"
+          style={{ marginTop: '15px', fontSize: '1rem' }}
+        >
+          게임에 참가하세요
+        </p>
+      </div>
 
-      <div style={{ marginTop: '20px' }}>
-        <label style={{ display: 'block', marginBottom: '10px' }}>
-          플레이어 이름:
-        </label>
-        <input
-          type="text"
-          value={playerName}
-          onChange={(e) => setPlayerName(e.target.value)}
-          placeholder="이름을 입력하세요"
-          style={{
-            width: '100%',
-            padding: '10px',
-            fontSize: '16px',
-            marginBottom: '20px',
-          }}
-        />
-
-        <label style={{ display: 'block', marginBottom: '10px' }}>
-          이모지 선택:
-        </label>
+      <div>
         <div style={{ marginBottom: '20px' }}>
+          <label
+            className="retro-text"
+            style={{ display: 'block', marginBottom: '10px', fontSize: '16px' }}
+          >
+            PLAYER NAME:
+          </label>
+          <input
+            type="text"
+            value={playerName}
+            onChange={(e) => setPlayerName(e.target.value)}
+            placeholder="이름을 입력하세요"
+            style={{
+              width: '100%',
+              padding: '12px',
+              fontSize: '16px',
+              marginBottom: '20px',
+              background: 'var(--dark-bg)',
+              color: 'var(--text-bright)',
+              border: '2px solid var(--neon-green)',
+              borderRadius: '5px',
+              fontFamily: 'Courier New, monospace',
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '30px' }}>
+          <label
+            className="retro-text"
+            style={{ display: 'block', marginBottom: '10px', fontSize: '16px' }}
+          >
+            SELECT EMOJI:
+          </label>
           <EmojiPicker
             selectedEmoji={selectedEmoji}
             onEmojiSelect={setSelectedEmoji}
@@ -70,19 +107,27 @@ export const JoinPage = () => {
 
         <button
           onClick={handleJoinGame}
-          disabled={!playerName.trim()}
+          disabled={!playerName.trim() || !isConnected}
+          className="retro-button"
           style={{
+            fontSize: '18px',
+            padding: '15px 30px',
             width: '100%',
-            padding: '15px',
-            fontSize: '16px',
-            backgroundColor: playerName.trim() ? '#007bff' : '#ccc',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
+            maxWidth: '300px',
+            opacity: !playerName.trim() || !isConnected ? 0.5 : 1,
+            cursor:
+              !playerName.trim() || !isConnected ? 'not-allowed' : 'pointer',
           }}
         >
-          게임 참가
+          JOIN GAME
         </button>
+
+        <div
+          className="retro-text"
+          style={{ marginTop: '15px', fontSize: '0.9rem' }}
+        >
+          연결 상태: {isConnected ? '🟢 ONLINE' : '🔴 OFFLINE'}
+        </div>
       </div>
     </div>
   );

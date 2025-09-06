@@ -248,12 +248,14 @@ interface GameCallbacks {
 ## 게임 특징
 
 ### 🎮 게임 규칙
+
 - 플레이어들은 미로에서 고스트를 피해 생존해야 합니다
 - 고스트에게 잡히면 탈락하며 순위가 결정됩니다
 - 마지막까지 살아남은 플레이어가 승리합니다
 - 최소 2명 이상의 플레이어가 있어야 게임을 시작할 수 있습니다
 
 ### ⚙️ 게임 설정
+
 - **난이도 조절**: 고스트 속도와 AI 레벨 조정 가능
 - **속도 설정**: 플레이어와 고스트의 이동 속도 개별 조정
 - **최대 인원**: 동시 참여 가능한 최대 플레이어 수 설정
@@ -270,7 +272,7 @@ const newPlayer: ExternalPlayer = {
   name: '플레이어 이름',
   avatar: '🚀', // 이모지 아바타
 };
-setPlayers(prev => [...prev, newPlayer]);
+setPlayers((prev) => [...prev, newPlayer]);
 ```
 
 ### 플레이어 부스트 (현재 미구현)
@@ -287,7 +289,7 @@ const boostCommand: PlayerCommand = {
 
 ```typescript
 // 권장 방법: externalPlayers 배열에서 제거
-setPlayers(prev => prev.filter(p => p.id !== 'player-id'));
+setPlayers((prev) => prev.filter((p) => p.id !== 'player-id'));
 ```
 
 ## 이벤트 처리
@@ -298,22 +300,22 @@ const callbacks: GameCallbacks = {
   onPlayerJoined: (player, gameIndex) => {
     console.log(`${player.name} 입장 (게임 인덱스: ${gameIndex})`);
   },
-  
+
   // 플레이어 입장 실패 (인원 초과 등)
   onPlayerJoinFailed: (playerId, error) => {
     alert(`입장 실패: ${error.message}`);
   },
-  
+
   // 플레이어 탈락
   onPlayerEliminated: (playerId, rank) => {
     console.log(`플레이어 탈락 - 순위: ${rank}`);
   },
-  
+
   // 게임 종료
   onGameEnd: (rankings) => {
     console.log('최종 순위:', rankings);
   },
-  
+
   // 게임 리셋
   onGameReset: () => {
     // 플레이어 목록 초기화 등

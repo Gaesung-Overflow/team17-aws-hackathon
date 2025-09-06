@@ -21,56 +21,86 @@ export const HostPage = () => {
   const handleCreateRoom = () => {
     if (!roomName.trim() || !isConnected) return;
     createRoom(roomName.trim());
-    // 서버 응답을 기다림 (useEffect에서 처리)
   };
 
   return (
     <div
       style={{
-        padding: '20px',
+        padding: '40px 20px',
         textAlign: 'center',
-        maxWidth: '400px',
+        maxWidth: '600px',
         margin: '0 auto',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
       }}
     >
-      <h1>게임 방장 페이지</h1>
-
-      <div style={{ marginTop: '40px' }}>
-        <label
-          style={{ display: 'block', marginBottom: '10px', fontSize: '16px' }}
+      <div style={{ marginBottom: '40px' }}>
+        <h1 className="retro-title neon-pulse">CREATE ROOM</h1>
+        <p
+          className="retro-text"
+          style={{ marginTop: '15px', fontSize: '1rem' }}
         >
-          방 이름:
-        </label>
-        <input
-          type="text"
-          value={roomName}
-          onChange={(e) => setRoomName(e.target.value)}
-          placeholder="방 이름을 입력하세요"
-          style={{
-            width: '100%',
-            padding: '12px',
-            fontSize: '16px',
-            marginBottom: '20px',
-            border: '1px solid #ccc',
-            borderRadius: '5px',
-          }}
-        />
+          새로운 게임방을 만들어보세요
+        </p>
+      </div>
+
+      <div>
+        <h3
+          className="neon-glow-green retro-font"
+          style={{ fontSize: '1.1rem', marginBottom: '20px' }}
+        >
+          ROOM SETTINGS
+        </h3>
+
+        <div style={{ marginBottom: '20px' }}>
+          <label
+            className="retro-text"
+            style={{ display: 'block', marginBottom: '10px', fontSize: '16px' }}
+          >
+            ROOM NAME:
+          </label>
+          <input
+            type="text"
+            value={roomName}
+            onChange={(e) => setRoomName(e.target.value)}
+            placeholder="방 이름을 입력하세요"
+            style={{
+              width: '100%',
+              padding: '12px',
+              fontSize: '16px',
+              marginBottom: '20px',
+              background: 'var(--dark-bg)',
+              color: 'var(--text-bright)',
+              border: '2px solid var(--neon-green)',
+              borderRadius: '5px',
+              fontFamily: 'Courier New, monospace',
+            }}
+          />
+        </div>
 
         <button
           onClick={handleCreateRoom}
-          disabled={!roomName.trim()}
+          disabled={!roomName.trim() || !isConnected}
+          className="retro-button"
           style={{
-            padding: '15px 30px',
             fontSize: '18px',
-            backgroundColor: roomName.trim() ? '#007bff' : '#ccc',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: roomName.trim() ? 'pointer' : 'not-allowed',
+            padding: '15px 30px',
+            opacity: !roomName.trim() || !isConnected ? 0.5 : 1,
+            cursor:
+              !roomName.trim() || !isConnected ? 'not-allowed' : 'pointer',
           }}
         >
-          방 만들기
+          START GAME
         </button>
+
+        <div
+          className="retro-text"
+          style={{ marginTop: '15px', fontSize: '0.9rem' }}
+        >
+          연결 상태: {isConnected ? '🟢 ONLINE' : '🔴 OFFLINE'}
+        </div>
       </div>
     </div>
   );

@@ -4,59 +4,80 @@ export const HomePage = () => {
   return (
     <div
       style={{
-        padding: '20px',
+        padding: '40px 20px',
         textAlign: 'center',
-        maxWidth: '600px',
+        maxWidth: '800px',
         margin: '0 auto',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
       }}
     >
-      <h1>돔황챠 - 팩맨 서바이벌</h1>
-      <p>실시간 멀티플레이어 팩맨 게임</p>
+      <div style={{ marginBottom: '40px' }}>
+        <h1 className="retro-title neon-pulse">LASTBYTE</h1>
+        <h2
+          className="neon-glow-green retro-font"
+          style={{ fontSize: '1.2rem', marginTop: '20px' }}
+        >
+          PACMAN SURVIVAL
+        </h2>
+        <p
+          className="retro-text"
+          style={{ marginTop: '15px', fontSize: '1rem' }}
+        >
+          실시간 멀티플레이어 팩맨 게임
+        </p>
+      </div>
 
       <div
         style={{
-          marginTop: '40px',
           display: 'flex',
-          gap: '20px',
+          gap: '30px',
           justifyContent: 'center',
+          flexWrap: 'wrap',
+          marginBottom: '40px',
         }}
       >
         <Link
           to="/host"
+          className="retro-button"
           style={{
-            display: 'block',
-            padding: '20px 40px',
-            backgroundColor: '#007bff',
-            color: 'white',
-            textDecoration: 'none',
-            borderRadius: '10px',
             fontSize: '18px',
+            padding: '20px 40px',
           }}
         >
-          방 만들기
+          CREATE ROOM
         </Link>
 
         <Link
           to="/game"
+          className="retro-button"
           style={{
-            display: 'block',
-            padding: '20px 40px',
-            backgroundColor: '#28a745',
-            color: 'white',
-            textDecoration: 'none',
-            borderRadius: '10px',
             fontSize: '18px',
+            padding: '20px 40px',
           }}
         >
-          로컬 게임
+          LOCAL GAME
         </Link>
       </div>
 
-      <div style={{ marginTop: '40px' }}>
-        <h3>게임 참가 방법</h3>
-        <p>1. 방장이 "방 만들기"로 게임방을 생성합니다</p>
-        <p>2. QR 코드를 스캔하거나 방 ID로 접속합니다</p>
-        <p>3. 이름을 입력하고 게임에 참가합니다</p>
+      <div className="retro-panel">
+        <h3
+          className="neon-glow-green retro-font"
+          style={{ fontSize: '1.1rem', marginBottom: '20px' }}
+        >
+          HOW TO PLAY
+        </h3>
+        <div style={{ textAlign: 'left', maxWidth: '400px', margin: '0 auto' }}>
+          <p className="retro-text" style={{ marginBottom: '10px' }}>
+            1. 방장이 "CREATE ROOM"으로 게임방을 생성합니다
+          </p>
+          <p className="retro-text" style={{ marginBottom: '10px' }}>
+            2. QR 코드를 스캔하거나 방 ID로 접속합니다
+          </p>
+          <p className="retro-text">3. 이름을 입력하고 게임에 참가합니다</p>
+        </div>
       </div>
     </div>
   );

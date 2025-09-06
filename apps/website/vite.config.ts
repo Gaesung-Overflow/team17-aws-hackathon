@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      'game': path.resolve(__dirname, '../../packages/game/src')
-    }
-  }
+      game: path.resolve(__dirname, '../../packages/game/src'),
+    },
+  },
 });

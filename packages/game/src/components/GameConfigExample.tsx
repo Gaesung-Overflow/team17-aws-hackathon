@@ -7,7 +7,7 @@ export const GameConfigExample: React.FC = () => {
   const [playerSpeed, setPlayerSpeed] = useState(300);
   const [ghostSpeed, setGhostSpeed] = useState(300);
   const [maxPlayers, setMaxPlayers] = useState(4);
-  
+
   const [players, setPlayers] = useState<ExternalPlayer[]>([
     { id: 'player1', name: '플레이어 1', emoji: '🔵' },
     { id: 'player2', name: '플레이어 2', emoji: '🟢' },
@@ -41,11 +41,18 @@ export const GameConfigExample: React.FC = () => {
   return (
     <div style={{ padding: '20px' }}>
       <h2>게임 설정 예시</h2>
-      
-      <div style={{ marginBottom: '20px', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+
+      <div
+        style={{
+          marginBottom: '20px',
+          display: 'flex',
+          gap: '20px',
+          flexWrap: 'wrap',
+        }}
+      >
         <div>
           <label>
-            술래 레벨 (1-5): 
+            술래 레벨 (1-5):
             <input
               type="range"
               min="1"
@@ -56,10 +63,10 @@ export const GameConfigExample: React.FC = () => {
             <span>{ghostLevel}</span>
           </label>
         </div>
-        
+
         <div>
           <label>
-            플레이어 속도 (100-500ms): 
+            플레이어 속도 (100-500ms):
             <input
               type="range"
               min="100"
@@ -71,10 +78,10 @@ export const GameConfigExample: React.FC = () => {
             <span>{playerSpeed}ms</span>
           </label>
         </div>
-        
+
         <div>
           <label>
-            술래 속도 (100-500ms): 
+            술래 속도 (100-500ms):
             <input
               type="range"
               min="100"
@@ -86,10 +93,10 @@ export const GameConfigExample: React.FC = () => {
             <span>{ghostSpeed}ms</span>
           </label>
         </div>
-        
+
         <div>
           <label>
-            최대 플레이어 수 (2-8): 
+            최대 플레이어 수 (2-8):
             <input
               type="range"
               min="2"

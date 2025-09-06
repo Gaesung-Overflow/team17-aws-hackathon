@@ -35,7 +35,7 @@ export const VictoryAnimation = ({ myRank }: { myRank?: number }) => {
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            fontSize: '48px',
+            fontSize: '40px',
             fontWeight: 'bold',
             color: '#FFD700',
             textShadow: '2px 2px 4px rgba(0,0,0,0.5)',

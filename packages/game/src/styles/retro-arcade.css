@@ -2,11 +2,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 /* 전체 페이지 레트로 배경 */
-body, html {
-  background: 
-    radial-gradient(circle at 20% 80%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, rgba(255, 255, 0, 0.05) 0%, transparent 70%),
+body,
+html {
+  background:
+    radial-gradient(
+      circle at 20% 80%,
+      rgba(255, 0, 255, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(0, 255, 255, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(255, 255, 0, 0.05) 0%,
+      transparent 70%
+    ),
     linear-gradient(135deg, #000000 0%, #111111 100%);
   min-height: 100vh;
   color: var(--neon-white);
@@ -29,7 +42,7 @@ body, html {
   --neon-red: #ff0040;
   --neon-blue: #0080ff;
   --neon-white: #ffffff;
-  
+
   /* 게임 보드 색상 */
   --wall-color: #333333;
   --floor-color: #111111;
@@ -71,7 +84,7 @@ body, html {
 
 /* 네온 글로우 효과 */
 .neon-glow {
-  text-shadow: 
+  text-shadow:
     0 0 5px currentColor,
     0 0 10px currentColor,
     0 0 15px currentColor,
@@ -80,7 +93,7 @@ body, html {
 
 .neon-glow-green {
   color: var(--neon-green);
-  text-shadow: 
+  text-shadow:
     0 0 5px var(--neon-green),
     0 0 10px var(--neon-green),
     0 0 15px var(--neon-green);
@@ -88,7 +101,7 @@ body, html {
 
 .neon-glow-pink {
   color: var(--neon-pink);
-  text-shadow: 
+  text-shadow:
     0 0 5px var(--neon-pink),
     0 0 10px var(--neon-pink),
     0 0 15px var(--neon-pink);
@@ -96,7 +109,7 @@ body, html {
 
 .neon-glow-cyan {
   color: var(--neon-cyan);
-  text-shadow: 
+  text-shadow:
     0 0 5px var(--neon-cyan),
     0 0 10px var(--neon-cyan),
     0 0 15px var(--neon-cyan);
@@ -106,7 +119,7 @@ body, html {
 .arcade-game-board {
   background: var(--arcade-bg);
   border: 3px solid var(--neon-cyan);
-  box-shadow: 
+  box-shadow:
     0 0 20px var(--neon-cyan),
     inset 0 0 20px rgba(0, 255, 255, 0.1);
   position: relative;
@@ -119,15 +132,25 @@ body, html {
   left: -3px;
   right: -3px;
   bottom: -3px;
-  background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink), var(--neon-yellow), var(--neon-cyan));
+  background: linear-gradient(
+    45deg,
+    var(--neon-cyan),
+    var(--neon-pink),
+    var(--neon-yellow),
+    var(--neon-cyan)
+  );
   z-index: -1;
   border-radius: 4px;
   animation: border-glow 3s ease-in-out infinite alternate;
 }
 
 @keyframes border-glow {
-  0% { opacity: 0.7; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 /* 게임 셀 스타일 */
@@ -150,8 +173,12 @@ body, html {
 }
 
 @keyframes death-pulse {
-  0% { box-shadow: inset 0 0 10px rgba(255, 0, 64, 0.3); }
-  100% { box-shadow: inset 0 0 20px rgba(255, 0, 64, 0.6); }
+  0% {
+    box-shadow: inset 0 0 10px rgba(255, 0, 64, 0.3);
+  }
+  100% {
+    box-shadow: inset 0 0 20px rgba(255, 0, 64, 0.6);
+  }
 }
 
 /* 경고 플래시 효과 */
@@ -162,8 +189,13 @@ body, html {
 }
 
 @keyframes warning-flash {
-  0%, 100% { background: var(--floor-color) !important; }
-  50% { background: #330000 !important; }
+  0%,
+  100% {
+    background: var(--floor-color) !important;
+  }
+  50% {
+    background: #330000 !important;
+  }
 }
 
 /* 플레이어 이름 태그 */
@@ -202,20 +234,20 @@ body, html {
   padding: 6px 10px;
   border-radius: 8px;
   text-shadow: 0 0 5px var(--neon-white);
-  box-shadow: 
+  box-shadow:
     0 0 20px rgba(255, 0, 64, 0.5),
     inset 0 0 10px rgba(255, 0, 64, 0.1);
   animation: speech-glow 2s ease-in-out infinite alternate;
 }
 
 @keyframes speech-glow {
-  0% { 
-    box-shadow: 
+  0% {
+    box-shadow:
       0 0 20px rgba(255, 0, 64, 0.5),
       inset 0 0 10px rgba(255, 0, 64, 0.1);
   }
-  100% { 
-    box-shadow: 
+  100% {
+    box-shadow:
       0 0 30px rgba(255, 0, 64, 0.8),
       inset 0 0 15px rgba(255, 0, 64, 0.2);
   }
@@ -267,7 +299,11 @@ body, html {
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
   pointer-events: none;
   z-index: 999;
 }
@@ -283,14 +319,14 @@ body, html {
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 
+  box-shadow:
     0 0 20px rgba(255, 0, 255, 0.5),
     inset 0 0 10px rgba(255, 255, 255, 0.2);
 }
 
 .arcade-button:hover {
   background: linear-gradient(45deg, var(--neon-cyan), var(--neon-yellow));
-  box-shadow: 
+  box-shadow:
     0 0 30px rgba(0, 255, 255, 0.8),
     inset 0 0 15px rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
@@ -298,7 +334,7 @@ body, html {
 
 .arcade-button:active {
   transform: translateY(0);
-  box-shadow: 
+  box-shadow:
     0 0 15px rgba(255, 0, 255, 0.3),
     inset 0 0 5px rgba(255, 255, 255, 0.1);
 }
@@ -312,7 +348,7 @@ body, html {
   color: var(--neon-green);
   padding: 10px;
   text-shadow: 0 0 5px var(--neon-green);
-  box-shadow: 
+  box-shadow:
     0 0 20px rgba(0, 255, 0, 0.3),
     inset 0 0 10px rgba(0, 255, 0, 0.1);
 }
@@ -323,8 +359,14 @@ body, html {
 }
 
 @keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
 }
 
 /* 게임 오버 효과 */
@@ -332,7 +374,7 @@ body, html {
   font-family: 'Press Start 2P', monospace;
   font-size: 16px;
   color: var(--neon-red);
-  text-shadow: 
+  text-shadow:
     0 0 10px var(--neon-red),
     0 0 20px var(--neon-red),
     0 0 30px var(--neon-red);
@@ -340,11 +382,11 @@ body, html {
 }
 
 @keyframes game-over-pulse {
-  0% { 
+  0% {
     transform: scale(1);
     opacity: 0.8;
   }
-  100% { 
+  100% {
     transform: scale(1.1);
     opacity: 1;
   }

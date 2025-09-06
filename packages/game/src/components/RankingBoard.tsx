@@ -40,11 +40,21 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({
 
   return (
     <div className="arcade-info-panel" style={{ width: '100%' }}>
-      <h3 className="retro-font neon-glow-green" style={{ margin: '0 0 15px 0', textAlign: 'center', textTransform: 'uppercase' }}>
+      <h3
+        className="retro-font neon-glow-green"
+        style={{
+          margin: '0 0 15px 0',
+          textAlign: 'center',
+          textTransform: 'uppercase',
+        }}
+      >
         RANKING
       </h3>
 
-      <div className="retro-font neon-glow-cyan" style={{ marginBottom: '10px', fontSize: '10px', textAlign: 'center' }}>
+      <div
+        className="retro-font neon-glow-cyan"
+        style={{ marginBottom: '10px', fontSize: '10px', textAlign: 'center' }}
+      >
         ALIVE: {remainingPlayers} / {totalPlayers}
       </div>
 
@@ -68,7 +78,7 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({
                   border: '1px solid var(--neon-green)',
                   borderRadius: '4px',
                   color: 'var(--neon-green)',
-                  textShadow: '0 0 5px var(--neon-green)'
+                  textShadow: '0 0 5px var(--neon-green)',
                 }}
               >
                 <div
@@ -84,7 +94,9 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({
                       `Player ${playerId + 1}`}
                   </span>
                 </div>
-                <div className="neon-glow-green" style={{ fontWeight: 'bold' }}>ALIVE</div>
+                <div className="neon-glow-green" style={{ fontWeight: 'bold' }}>
+                  ALIVE
+                </div>
               </div>
             );
           })}
@@ -92,7 +104,14 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({
         {/* 순위가 매겨진 플레이어들 표시 */}
         {sortedRankings.length === 0
           ? totalPlayers === 0 && (
-              <div className="retro-font arcade-blink" style={{ textAlign: 'center', color: 'var(--neon-yellow)', textShadow: '0 0 5px var(--neon-yellow)' }}>
+              <div
+                className="retro-font arcade-blink"
+                style={{
+                  textAlign: 'center',
+                  color: 'var(--neon-yellow)',
+                  textShadow: '0 0 5px var(--neon-yellow)',
+                }}
+              >
                 START GAME!
               </div>
             )
@@ -109,11 +128,17 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({
                     justifyContent: 'space-between',
                     padding: '8px',
                     marginBottom: '4px',
-                    backgroundColor: isTopThree ? 'rgba(0, 255, 0, 0.1)' : 'rgba(255, 0, 64, 0.1)',
-                    border: isTopThree ? '1px solid var(--neon-green)' : '1px solid var(--neon-red)',
+                    backgroundColor: isTopThree
+                      ? 'rgba(0, 255, 0, 0.1)'
+                      : 'rgba(255, 0, 64, 0.1)',
+                    border: isTopThree
+                      ? '1px solid var(--neon-green)'
+                      : '1px solid var(--neon-red)',
                     borderRadius: '4px',
                     color: isTopThree ? 'var(--neon-green)' : 'var(--neon-red)',
-                    textShadow: isTopThree ? '0 0 5px var(--neon-green)' : '0 0 5px var(--neon-red)'
+                    textShadow: isTopThree
+                      ? '0 0 5px var(--neon-green)'
+                      : '0 0 5px var(--neon-red)',
                   }}
                 >
                   <div

@@ -475,10 +475,14 @@ export const ExternalPacmanGame: React.FC<ExternalPacmanGameProps> = ({
         externalPlayers={externalPlayers}
         playerIdMap={playerIdMap}
         gameConfig={{
-          playerSpeedLevel: gameConfig.playerSpeed ? Math.round((500 - gameConfig.playerSpeed) / 50) + 1 : 5,
-          ghostSpeedLevel: gameConfig.ghostSpeed ? Math.round((500 - gameConfig.ghostSpeed) / 50) + 1 : 6,
+          playerSpeedLevel: gameConfig.playerSpeed
+            ? Math.round((500 - gameConfig.playerSpeed) / 50) + 1
+            : 5,
+          ghostSpeedLevel: gameConfig.ghostSpeed
+            ? Math.round((500 - gameConfig.ghostSpeed) / 50) + 1
+            : 6,
           ghostLevel: gameConfig.ghostLevel || 4,
-          selectedMapId: gameConfig.selectedMapId || 'classic'
+          selectedMapId: gameConfig.selectedMapId || 'classic',
         }}
         onConfigChange={(config) => {
           // GamePage의 setGameSettings를 호출하기 위해 콜백 추가 필요

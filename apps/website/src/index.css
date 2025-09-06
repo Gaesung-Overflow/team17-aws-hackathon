@@ -115,15 +115,15 @@ body {
   background:
     radial-gradient(
       circle at 20% 80%,
-      rgba(255, 0, 255, 0.1) 0%,
+      rgba(120, 0, 120, 0.05) 0%,
       transparent 50%
     ),
     radial-gradient(
       circle at 80% 20%,
-      rgba(0, 255, 255, 0.1) 0%,
+      rgba(0, 120, 120, 0.05) 0%,
       transparent 50%
     ),
-    linear-gradient(135deg, #000000 0%, #111111 100%);
+    linear-gradient(135deg, #000000 0%, #0a0a0a 100%);
 }
 
 ol,
@@ -150,6 +150,17 @@ table {
 }
 
 :root {
+  /* 레트로 색상 팔레트 - 가독성 개선 */
+  --neon-green: #00ff88;
+  --neon-cyan: #00ccff;
+  --neon-pink: #ff6699;
+  --neon-yellow: #ffdd00;
+  --neon-red: #ff4466;
+  --dark-bg: #0a0a0a;
+  --panel-bg: rgba(0, 0, 0, 0.85);
+  --text-bright: #f0f0f0;
+  --text-primary: #00ff88;
+
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -217,6 +228,115 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+/* 레트로 스타일 클래스들 */
+.retro-font {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.retro-title {
+  font-size: 2.5rem;
+  background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.neon-glow-green {
+  color: var(--text-primary);
+  text-shadow:
+    0 0 5px var(--neon-green),
+    0 0 10px var(--neon-green);
+}
+
+.neon-glow-cyan {
+  color: var(--neon-cyan);
+  text-shadow:
+    0 0 5px var(--neon-cyan),
+    0 0 10px var(--neon-cyan);
+}
+
+.neon-glow-pink {
+  color: var(--neon-pink);
+  text-shadow:
+    0 0 5px var(--neon-pink),
+    0 0 10px var(--neon-pink);
+}
+
+.neon-glow-red {
+  color: var(--neon-red);
+  text-shadow:
+    0 0 5px var(--neon-red),
+    0 0 10px var(--neon-red);
+}
+
+.neon-glow-yellow {
+  color: var(--neon-yellow);
+  text-shadow:
+    0 0 5px var(--neon-yellow),
+    0 0 10px var(--neon-yellow);
+}
+
+.retro-text {
+  color: var(--text-bright);
+  text-shadow: 0 0 2px rgba(240, 240, 240, 0.6);
+}
+
+.retro-panel {
+  background: var(--panel-bg);
+  border: 2px solid var(--neon-cyan);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow:
+    0 0 25px rgba(0, 255, 255, 0.4),
+    inset 0 0 25px rgba(0, 255, 255, 0.15);
+  backdrop-filter: blur(15px);
+}
+
+.retro-button {
+  background: linear-gradient(45deg, var(--neon-green), var(--neon-cyan));
+  border: none;
+  color: black;
+  padding: 12px 24px;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+  font-family: 'Courier New', monospace;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.retro-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 25px rgba(0, 255, 255, 0.7);
+}
+
+.neon-pulse {
+  animation: neonPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes neonPulse {
+  from {
+    text-shadow:
+      0 0 3px var(--neon-cyan),
+      0 0 5px var(--neon-cyan);
+  }
+  to {
+    text-shadow:
+      0 0 4px var(--neon-cyan),
+      0 0 6px var(--neon-cyan);
+  }
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
@@ -231,5 +351,46 @@ button:focus-visible {
       var(--neon-pink, #ff00ff),
       var(--neon-cyan, #00ffff)
     );
+  }
+}
+
+@media (max-width: 768px) {
+  .retro-panel {
+    padding: 15px;
+    margin: 10px;
+  }
+
+  .retro-title {
+    font-size: 1.8rem;
+  }
+
+  .retro-button {
+    padding: 15px 25px !important;
+    font-size: 16px !important;
+    width: 100%;
+    max-width: 280px;
+  }
+
+  input {
+    font-size: 16px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .retro-title {
+    font-size: 1.5rem;
+  }
+
+  .neon-glow-green {
+    font-size: 1rem !important;
+  }
+
+  .retro-text {
+    font-size: 0.9rem !important;
+  }
+
+  .retro-button {
+    padding: 12px 20px !important;
+    font-size: 14px !important;
   }
 }

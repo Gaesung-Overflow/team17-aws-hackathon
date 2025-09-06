@@ -12,7 +12,12 @@ interface GameConfig {
 
 interface FloatingGameInfoProps {
   gameState: GameState;
-  gameOver: { isOver: boolean; winner?: number; totalPlayers: number; remainingPlayers: number };
+  gameOver: {
+    isOver: boolean;
+    winner?: number;
+    totalPlayers: number;
+    remainingPlayers: number;
+  };
   step: number;
   externalPlayers?: ExternalPlayer[];
   playerIdMap?: Map<string, number>;
@@ -21,15 +26,20 @@ interface FloatingGameInfoProps {
   gameStarted?: boolean;
 }
 
-export const FloatingGameInfo: React.FC<FloatingGameInfoProps> = ({ 
-  gameState, 
-  gameOver, 
+export const FloatingGameInfo: React.FC<FloatingGameInfoProps> = ({
+  gameState,
+  gameOver,
   step,
   externalPlayers = [],
   playerIdMap = new Map(),
-  gameConfig = { playerSpeedLevel: 5, ghostSpeedLevel: 6, ghostLevel: 4, selectedMapId: 'classic' },
+  gameConfig = {
+    playerSpeedLevel: 5,
+    ghostSpeedLevel: 6,
+    ghostLevel: 4,
+    selectedMapId: 'classic',
+  },
   onConfigChange,
-  gameStarted = false
+  gameStarted = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'status' | 'config'>('status');
@@ -58,7 +68,9 @@ export const FloatingGameInfo: React.FC<FloatingGameInfoProps> = ({
   }, [isOpen]);
 
   return (
-    <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000 }}>
+    <div
+      style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000 }}
+    >
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
@@ -71,9 +83,8 @@ export const FloatingGameInfo: React.FC<FloatingGameInfoProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '0'
+          padding: '0',
         }}
-
       >
         📊
       </button>
@@ -88,17 +99,19 @@ export const FloatingGameInfo: React.FC<FloatingGameInfoProps> = ({
             right: '0',
             width: '320px',
             fontSize: '10px',
-            zIndex: 1001
+            zIndex: 1001,
           }}
         >
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            marginBottom: '12px',
-            borderBottom: '1px solid #eee',
-            paddingBottom: '8px'
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '12px',
+              borderBottom: '1px solid #eee',
+              paddingBottom: '8px',
+            }}
+          >
             <div style={{ display: 'flex', gap: '8px' }}>
               <button
                 onClick={() => setActiveTab('status')}
@@ -109,7 +122,7 @@ export const FloatingGameInfo: React.FC<FloatingGameInfoProps> = ({
                   fontSize: '10px',
                   cursor: 'pointer',
                   color: activeTab === 'status' ? 'var(--neon-green)' : '#999',
-                  textTransform: 'uppercase'
+                  textTransform: 'uppercase',
                 }}
               >
                 STATUS
@@ -123,7 +136,7 @@ export const FloatingGameInfo: React.FC<FloatingGameInfoProps> = ({
                   fontSize: '10px',
                   cursor: 'pointer',
                   color: activeTab === 'config' ? 'var(--neon-cyan)' : '#999',
-                  textTransform: 'uppercase'
+                  textTransform: 'uppercase',
                 }}
               >
                 CONFIG
@@ -137,7 +150,7 @@ export const FloatingGameInfo: React.FC<FloatingGameInfoProps> = ({
                 border: 'none',
                 fontSize: '18px',
                 cursor: 'pointer',
-                color: 'var(--neon-red)'
+                color: 'var(--neon-red)',
               }}
             >
               ×
@@ -146,31 +159,45 @@ export const FloatingGameInfo: React.FC<FloatingGameInfoProps> = ({
 
           {activeTab === 'status' ? (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '12px' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, 1fr)',
+                  gap: '8px',
+                  marginBottom: '12px',
+                }}
+              >
                 <div className="retro-font" style={{ fontSize: '8px' }}>
                   <strong>STEP:</strong> {step}
                 </div>
                 <div className="retro-font" style={{ fontSize: '8px' }}>
-                  <strong>ALIVE:</strong> {gameOver.remainingPlayers}/{gameOver.totalPlayers}
+                  <strong>ALIVE:</strong> {gameOver.remainingPlayers}/
+                  {gameOver.totalPlayers}
                 </div>
                 <div className="retro-font" style={{ fontSize: '8px' }}>
-                  <strong>GHOST:</strong> ({Math.round(gameState.ghost.x)}, {Math.round(gameState.ghost.y)})
+                  <strong>GHOST:</strong> ({Math.round(gameState.ghost.x)},{' '}
+                  {Math.round(gameState.ghost.y)})
                 </div>
                 <div className="retro-font" style={{ fontSize: '8px' }}>
-                  <strong>MAP:</strong> {gameState.mapSize.width}×{gameState.mapSize.height}
+                  <strong>MAP:</strong> {gameState.mapSize.width}×
+                  {gameState.mapSize.height}
                 </div>
               </div>
-              
+
               {gameOver.isOver && (
-                <div style={{ 
-                  marginBottom: '12px',
-                  padding: '8px', 
-                  backgroundColor: gameOver.winner !== undefined ? '#e8f5e8' : '#ffebee', 
-                  borderRadius: '4px',
-                  color: gameOver.winner !== undefined ? '#2e7d32' : '#c62828',
-                  fontSize: '12px',
-                  textAlign: 'center'
-                }}>
+                <div
+                  style={{
+                    marginBottom: '12px',
+                    padding: '8px',
+                    backgroundColor:
+                      gameOver.winner !== undefined ? '#e8f5e8' : '#ffebee',
+                    borderRadius: '4px',
+                    color:
+                      gameOver.winner !== undefined ? '#2e7d32' : '#c62828',
+                    fontSize: '12px',
+                    textAlign: 'center',
+                  }}
+                >
                   {gameOver.winner !== undefined ? (
                     <strong>🎉 플레이어 {gameOver.winner + 1} 우승!</strong>
                   ) : (
@@ -181,30 +208,55 @@ export const FloatingGameInfo: React.FC<FloatingGameInfoProps> = ({
             </>
           ) : (
             <div>
-              <strong className="retro-font neon-glow-cyan" style={{ fontSize: '10px', marginBottom: '8px', display: 'block' }}>GAME CONFIG:</strong>
-              
+              <strong
+                className="retro-font neon-glow-cyan"
+                style={{
+                  fontSize: '10px',
+                  marginBottom: '8px',
+                  display: 'block',
+                }}
+              >
+                GAME CONFIG:
+              </strong>
+
               {gameStarted && (
-                <div style={{ 
-                  marginBottom: '12px',
-                  padding: '6px', 
-                  backgroundColor: '#fff3cd', 
-                  borderRadius: '4px',
-                  color: '#856404',
-                  fontSize: '9px',
-                  textAlign: 'center'
-                }}>
+                <div
+                  style={{
+                    marginBottom: '12px',
+                    padding: '6px',
+                    backgroundColor: '#fff3cd',
+                    borderRadius: '4px',
+                    color: '#856404',
+                    fontSize: '9px',
+                    textAlign: 'center',
+                  }}
+                >
                   ⚠️ 게임 진행 중에는 설정을 변경할 수 없습니다
                 </div>
               )}
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+
+              <div
+                style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+              >
                 <div>
-                  <label className="retro-font" style={{ fontSize: '8px', display: 'block', marginBottom: '2px' }}>
+                  <label
+                    className="retro-font"
+                    style={{
+                      fontSize: '8px',
+                      display: 'block',
+                      marginBottom: '2px',
+                    }}
+                  >
                     MAP:
                   </label>
                   <select
                     value={gameConfig.selectedMapId}
-                    onChange={(e) => onConfigChange?.({ ...gameConfig, selectedMapId: e.target.value })}
+                    onChange={(e) =>
+                      onConfigChange?.({
+                        ...gameConfig,
+                        selectedMapId: e.target.value,
+                      })
+                    }
                     disabled={gameStarted}
                     style={{
                       width: '100%',
@@ -213,7 +265,7 @@ export const FloatingGameInfo: React.FC<FloatingGameInfoProps> = ({
                       backgroundColor: '#000',
                       color: 'var(--neon-green)',
                       border: '1px solid var(--neon-green)',
-                      opacity: gameStarted ? 0.5 : 1
+                      opacity: gameStarted ? 0.5 : 1,
                     }}
                   >
                     <option value="classic">CLASSIC</option>
@@ -223,9 +275,16 @@ export const FloatingGameInfo: React.FC<FloatingGameInfoProps> = ({
                     <option value="spiral">SPIRAL</option>
                   </select>
                 </div>
-                
+
                 <div>
-                  <label className="retro-font" style={{ fontSize: '8px', display: 'block', marginBottom: '2px' }}>
+                  <label
+                    className="retro-font"
+                    style={{
+                      fontSize: '8px',
+                      display: 'block',
+                      marginBottom: '2px',
+                    }}
+                  >
                     PLAYER SPEED: {gameConfig.playerSpeedLevel}
                   </label>
                   <input
@@ -234,13 +293,25 @@ export const FloatingGameInfo: React.FC<FloatingGameInfoProps> = ({
                     max="9"
                     value={gameConfig.playerSpeedLevel}
                     disabled={gameStarted}
-                    onChange={(e) => onConfigChange?.({ ...gameConfig, playerSpeedLevel: Number(e.target.value) })}
+                    onChange={(e) =>
+                      onConfigChange?.({
+                        ...gameConfig,
+                        playerSpeedLevel: Number(e.target.value),
+                      })
+                    }
                     style={{ width: '100%', opacity: gameStarted ? 0.5 : 1 }}
                   />
                 </div>
-                
+
                 <div>
-                  <label className="retro-font" style={{ fontSize: '8px', display: 'block', marginBottom: '2px' }}>
+                  <label
+                    className="retro-font"
+                    style={{
+                      fontSize: '8px',
+                      display: 'block',
+                      marginBottom: '2px',
+                    }}
+                  >
                     GHOST SPEED: {gameConfig.ghostSpeedLevel}
                   </label>
                   <input
@@ -249,18 +320,35 @@ export const FloatingGameInfo: React.FC<FloatingGameInfoProps> = ({
                     max="9"
                     value={gameConfig.ghostSpeedLevel}
                     disabled={gameStarted}
-                    onChange={(e) => onConfigChange?.({ ...gameConfig, ghostSpeedLevel: Number(e.target.value) })}
+                    onChange={(e) =>
+                      onConfigChange?.({
+                        ...gameConfig,
+                        ghostSpeedLevel: Number(e.target.value),
+                      })
+                    }
                     style={{ width: '100%', opacity: gameStarted ? 0.5 : 1 }}
                   />
                 </div>
-                
+
                 <div>
-                  <label className="retro-font" style={{ fontSize: '8px', display: 'block', marginBottom: '2px' }}>
+                  <label
+                    className="retro-font"
+                    style={{
+                      fontSize: '8px',
+                      display: 'block',
+                      marginBottom: '2px',
+                    }}
+                  >
                     GHOST LEVEL:
                   </label>
                   <select
                     value={gameConfig.ghostLevel}
-                    onChange={(e) => onConfigChange?.({ ...gameConfig, ghostLevel: Number(e.target.value) })}
+                    onChange={(e) =>
+                      onConfigChange?.({
+                        ...gameConfig,
+                        ghostLevel: Number(e.target.value),
+                      })
+                    }
                     disabled={gameStarted}
                     style={{
                       width: '100%',
@@ -269,7 +357,7 @@ export const FloatingGameInfo: React.FC<FloatingGameInfoProps> = ({
                       backgroundColor: '#000',
                       color: 'var(--neon-green)',
                       border: '1px solid var(--neon-green)',
-                      opacity: gameStarted ? 0.5 : 1
+                      opacity: gameStarted ? 0.5 : 1,
                     }}
                   >
                     <option value={2}>EASY</option>
