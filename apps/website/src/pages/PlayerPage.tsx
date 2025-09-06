@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { EmojiAnimation } from '../components/EmojiAnimation';
+import { VictoryAnimation } from '../components/VictoryAnimation';
 
 export const PlayerPage = () => {
   const [searchParams] = useSearchParams();
@@ -15,12 +16,20 @@ export const PlayerPage = () => {
     'waiting' | 'running' | 'eliminated' | 'finished'
   >('waiting');
   const [cheerEmojis, setCheerEmojis] = useState<string[]>([]);
+  const [myRank, setMyRank] = useState<number>();
 
   useEffect(() => {
     onMessage((data) => {
       if (data.type === 'gameStateUpdate') {
-        console.log('게임 상태 업데이트:', data.state);
+        console.log('게임 상태 업데이트:', data);
         setGameState(data.state ?? 'waiting');
+        if (data.state === 'finished' && data.winners) {
+          data.winners.forEach((winner: { playerId: string; rank: number }) => {
+            if (winner.playerId === playerId) {
+              setMyRank(winner.rank);
+            }
+          });
+        }
       }
       if (data.type === 'playerAction') {
         if (data.action === 'cheer') {
@@ -134,6 +143,7 @@ export const PlayerPage = () => {
         <div>
           <h2>🎉 게임 종료!</h2>
           <p>새로운 게임을 기다려주세요</p>
+          <VictoryAnimation myRank={myRank} />
         </div>
       )}
 

@@ -249,6 +249,12 @@ export const ExternalPacmanGame: React.FC<ExternalPacmanGameProps> = ({
           }
 
           animationFrame = requestAnimationFrame(gameLoop);
+        } else {
+          console.log(
+            '게임 종료 감지, 게임 루프 중지',
+            externalState?.rankings,
+          );
+          callbacks.onGameEnd?.(externalState?.rankings || []);
         }
       }
     };

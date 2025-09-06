@@ -136,7 +136,18 @@ export const GamePage = () => {
       console.log(`플레이어 ${playerId} 탈락 - 순위: ${rank}`);
     },
     onGameEnd: (rankings) => {
-      console.log('게임 종료:', rankings);
+      const winners = rankings
+        .map((r) => {
+          return players.find((pl) => pl.id === r.playerId);
+        })
+        .filter((p) => p);
+      console.log('게임 종료:', winners);
+      sendMessage({
+        type: 'gameStateUpdate',
+        state: 'finished',
+        roomId,
+        winners,
+      });
     },
     onGameStateChange: (state) => {
       console.log('게임 상태 변경:', state);

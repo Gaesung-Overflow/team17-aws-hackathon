@@ -65,38 +65,6 @@ exports.handler = async (event) => {
         console.log('Message from:', connectionId);
         const body = JSON.parse(event.body || '{}');
 
-        if (body.type === 'gameStateUpdate') {
-          const roomMembers = await dynamodb.send(
-            new ScanCommand({
-              TableName: tableName,
-              FilterExpression: 'roomId = :roomId',
-              ExpressionAttributeValues: { ':roomId': body.roomId },
-            }),
-          );
-
-          const message = {
-            type: 'gameStateUpdate',
-            state: body.state,
-            roomId: body.roomId,
-          };
-          const promises = roomMembers.Items.map(
-            async ({ connectionId: id }) => {
-              try {
-                await apiGateway.send(
-                  new PostToConnectionCommand({
-                    ConnectionId: id,
-                    Data: JSON.stringify(message),
-                  }),
-                );
-              } catch (error) {
-                console.error(`Error sending messages to ${id}:`, error);
-              }
-            },
-          );
-          await Promise.all(promises);
-          return { statusCode: 200 };
-        }
-
         // joinRoom으로 방 입장 처리
         if (body.type === 'joinRoom') {
           await dynamodb.send(
