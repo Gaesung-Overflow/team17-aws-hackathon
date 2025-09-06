@@ -8,6 +8,7 @@ interface GameConfig {
   ghostSpeedLevel: number;
   ghostLevel: number;
   selectedMapId: string;
+  addMockPlayer?: () => void;
 }
 
 interface FloatingGameInfoProps {
@@ -238,6 +239,19 @@ export const FloatingGameInfo: React.FC<FloatingGameInfoProps> = ({
               <div
                 style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
               >
+                <div>
+                  <button
+                    className="retro-font"
+                    style={{
+                      fontSize: '8px',
+                      display: 'block',
+                      marginBottom: '2px',
+                    }}
+                    onClick={gameConfig.addMockPlayer}
+                  >
+                    ADD MOCK PLAYER
+                  </button>
+                </div>
                 <div>
                   <label
                     className="retro-font"

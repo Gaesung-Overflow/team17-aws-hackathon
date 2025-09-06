@@ -8,6 +8,7 @@ import { QRCodeDisplay } from '../components/QRCodeDisplay';
 import { Toast } from '../components/Toast';
 import { useWebSocket } from '../hooks/useWebSocket';
 import '../styles/retro-ui.css';
+import type { ExternalPlayer, GameCallbacks, PlayerCommand } from '../types';
 
 // 로딩 애니메이션 스타일 추가
 const loadingStyles = `
@@ -32,7 +33,6 @@ if (!document.querySelector('#loading-styles')) {
   style.textContent = loadingStyles;
   document.head.appendChild(style);
 }
-import type { ExternalPlayer, GameCallbacks, PlayerCommand } from '../types';
 
 export const GamePage = () => {
   const [searchParams] = useSearchParams();
@@ -63,7 +63,7 @@ export const GamePage = () => {
   const [showConfetti, setShowConfetti] = useState(false);
 
   const speedLevelToMs = (level: number) => 500 - (level - 1) * 50;
-  const MAX_PLAYERS = 10;
+  const MAX_PLAYERS = 20;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleMessage = useCallback((data: any) => {
@@ -140,28 +140,28 @@ export const GamePage = () => {
     }
   }, [roomId, isConnected, sendMessage]);
 
-  // const addPlayer = () => {
-  //   if (players.length >= MAX_PLAYERS) {
-  //     setToast({
-  //       message: `최대 ${MAX_PLAYERS}명까지만 참가할 수 있습니다.`,
-  //       type: 'error',
-  //     });
-  //     return;
-  //   }
+  const addPlayer = () => {
+    if (players.length >= MAX_PLAYERS) {
+      setToast({
+        message: `최대 ${MAX_PLAYERS}명까지만 참가할 수 있습니다.`,
+        type: 'error',
+      });
+      return;
+    }
 
-  //   const newPlayer = {
-  //     id: `player_${Date.now()}`,
-  //     name: `플레이어 ${players.length + 1}`,
-  //     emoji: ['🚀', '🎉', '🎆', '⭐'][players.length % 4],
-  //     joinedAt: Date.now(),
-  //   };
-  //   setPlayers((prev) =>
-  //     [...prev, newPlayer].sort(
-  //       (a, b) => (b.joinedAt || 0) - (a.joinedAt || 0),
-  //     ),
-  //   );
-  //   setCommands((prev) => [...prev, { playerId: newPlayer.id, type: 'add' }]);
-  // };
+    const newPlayer = {
+      id: `player_${Date.now()}`,
+      name: `테스트 플레이어 ${players.length + 1}`,
+      emoji: ['🚀', '🎉', '🎆', '⭐'][players.length % 4],
+      joinedAt: Date.now(),
+    };
+    setPlayers((prev) =>
+      [...prev, newPlayer].sort(
+        (a, b) => (b.joinedAt || 0) - (a.joinedAt || 0),
+      ),
+    );
+    setCommands((prev) => [...prev, { playerId: newPlayer.id, type: 'add' }]);
+  };
 
   const callbacks: GameCallbacks = useMemo(
     () => ({
@@ -334,62 +334,12 @@ export const GamePage = () => {
         )}
       </div>
 
-      {/* <div
-        style={{
-          marginBottom: '20px',
-          display: 'flex',
-          gap: '20px',
-          flexWrap: 'wrap',
-        }}
-      >
-        <div
-          className="retro-panel"
-          style={{
-            minWidth: '300px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px',
-          }}
-        >
-          <h3 className="retro-qr-title">
-            PLAYERS ({players.length}/{MAX_PLAYERS})
-          </h3>
-
-          {isHost && (
-            <button
-              className="retro-button"
-              onClick={addPlayer}
-              style={{ marginBottom: '15px' }}
-            >
-              ADD TEST PLAYER
-            </button>
-          )}
-
-          <div className="retro-player-list">
-            {players.length === 0 ? (
-              <p style={{ color: '#666', fontStyle: 'italic' }}>
-                참가자를 기다리는 중...
-              </p>
-            ) : (
-              players.map((player, index) => (
-                <div key={player.id} className="retro-player-item">
-                  <span style={{ fontSize: '20px' }}>{player.emoji}</span>
-                  <span style={{ fontWeight: 'bold' }}>{player.name}</span>
-                  <span
-                    style={{ fontSize: '8px', color: 'var(--neon-yellow)' }}
-                  >
-                    #{index + 1}
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </div> */}
-
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         {isHost && roomId && (
-          <div className="retro-panel retro-qr-panel" style={{ flexGrow: 1 }}>
+          <div
+            className="retro-panel retro-qr-panel"
+            style={{ flexGrow: 1, width: 200, maxHeight: 700 }}
+          >
             <div
               style={{
                 display: 'flex',
@@ -411,7 +361,7 @@ export const GamePage = () => {
               >
                 <h2 className="retro-qr-title">JOIN NOW!</h2>
                 <p>1. QR 코드 스캔</p>
-                <p>
+                <p style={{ wordBreak: 'break-all' }}>
                   2. 또는 직접 접속:
                   <br />
                   {window.location.origin}/join/{roomId}
@@ -435,6 +385,7 @@ export const GamePage = () => {
             ghostLevel: gameSettings.ghostLevel,
             selectedMapId: gameSettings.selectedMapId,
             gameStarted: gameStarted,
+            addMockPlayer: addPlayer,
           }}
         />
       </div>

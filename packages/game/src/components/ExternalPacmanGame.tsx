@@ -25,6 +25,7 @@ interface ExternalPacmanGameProps {
     maxPlayers?: number;
     selectedMapId?: string;
     gameStarted?: boolean;
+    addMockPlayer?: () => void;
   };
   showControls?: boolean;
   showStats?: boolean;
@@ -484,6 +485,7 @@ export const ExternalPacmanGame: React.FC<ExternalPacmanGameProps> = ({
             : 6,
           ghostLevel: gameConfig.ghostLevel || 4,
           selectedMapId: gameConfig.selectedMapId || 'classic',
+          addMockPlayer: gameConfig.addMockPlayer,
         }}
         onConfigChange={(config) => {
           // GamePage의 setGameSettings를 호출하기 위해 콜백 추가 필요
