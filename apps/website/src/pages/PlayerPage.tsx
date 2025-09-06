@@ -19,7 +19,7 @@ export const PlayerPage = () => {
   const [myRank, setMyRank] = useState<number>();
 
   useEffect(() => {
-    onMessage((data) => {
+    const cleanup = onMessage((data) => {
       if (data.type === 'gameStateUpdate') {
         console.log('게임 상태 업데이트:', data);
         if (data.state === 'finished' && data.winners) {
@@ -38,6 +38,9 @@ export const PlayerPage = () => {
         }
       }
     });
+    return () => {
+      cleanup();
+    };
   }, [onMessage]);
 
   const sendAction = (action: string) => {

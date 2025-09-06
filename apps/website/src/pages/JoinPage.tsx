@@ -8,6 +8,7 @@ export const JoinPage = () => {
   const navigate = useNavigate();
   const [playerName, setPlayerName] = useState('');
   const [selectedEmoji, setSelectedEmoji] = useState('😀');
+  const [clicked, setClicked] = useState(false);
   const { joinGame, onMessage, isConnected } = useWebSocket();
 
   useEffect(() => {
@@ -36,6 +37,7 @@ export const JoinPage = () => {
       );
       return;
     }
+    setClicked(true);
     joinGame(roomId, playerName.trim(), selectedEmoji);
   };
 
@@ -110,16 +112,18 @@ export const JoinPage = () => {
 
         <button
           onClick={handleJoinGame}
-          disabled={!playerName.trim() || !isConnected}
+          disabled={!playerName.trim() || !isConnected || clicked}
           className="retro-button"
           style={{
             fontSize: '18px',
             padding: '15px 30px',
             width: '100%',
             maxWidth: '300px',
-            opacity: !playerName.trim() || !isConnected ? 0.5 : 1,
+            opacity: !playerName.trim() || !isConnected || clicked ? 0.5 : 1,
             cursor:
-              !playerName.trim() || !isConnected ? 'not-allowed' : 'pointer',
+              !playerName.trim() || !isConnected || clicked
+                ? 'not-allowed'
+                : 'pointer',
           }}
         >
           JOIN GAME

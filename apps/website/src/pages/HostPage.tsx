@@ -5,21 +5,26 @@ import { useWebSocket } from '../hooks/useWebSocket';
 export const HostPage = () => {
   const navigate = useNavigate();
   const [roomName, setRoomName] = useState('');
+  const [clicked, setClicked] = useState(false);
 
   const { createRoom, onMessage, isConnected } = useWebSocket();
 
   useEffect(() => {
-    onMessage((data) => {
+    const cleanup = onMessage((data) => {
       if (data.type === 'roomCreated') {
         navigate(
           `/game?roomId=${data.roomId}&isHost=true&roomName=${encodeURIComponent(data.roomName)}`,
         );
       }
     });
+    return () => {
+      cleanup();
+    };
   }, [navigate, onMessage]);
 
   const handleCreateRoom = () => {
     if (!roomName.trim() || !isConnected) return;
+    setClicked(true);
     createRoom(roomName.trim());
   };
 
@@ -82,14 +87,16 @@ export const HostPage = () => {
 
         <button
           onClick={handleCreateRoom}
-          disabled={!roomName.trim() || !isConnected}
+          disabled={!roomName.trim() || !isConnected || clicked}
           className="retro-button"
           style={{
             fontSize: '18px',
             padding: '15px 30px',
-            opacity: !roomName.trim() || !isConnected ? 0.5 : 1,
+            opacity: !roomName.trim() || !isConnected || clicked ? 0.5 : 1,
             cursor:
-              !roomName.trim() || !isConnected ? 'not-allowed' : 'pointer',
+              !roomName.trim() || !isConnected || clicked
+                ? 'not-allowed'
+                : 'pointer',
           }}
         >
           START GAME
