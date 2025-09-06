@@ -6,7 +6,9 @@
   *마지막 한 바이트의 주인공이 되어볼까요?* 🍕💾
 </div>
 
-![intro](./docs/intro.gif)
+<div align="center">
+  <img src="./docs/intro.gif" alt="Intro" >
+</div>
 
 ## 어플리케이션 개요
 
