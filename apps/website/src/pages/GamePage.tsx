@@ -8,6 +8,30 @@ import { QRCodeDisplay } from '../components/QRCodeDisplay';
 import { Toast } from '../components/Toast';
 import { useWebSocket } from '../hooks/useWebSocket';
 import '../styles/retro-ui.css';
+
+// 로딩 애니메이션 스타일 추가
+const loadingStyles = `
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+  @keyframes vortex {
+    0% { transform: rotate(0deg) scale(1); }
+    100% { transform: rotate(360deg) scale(0.1); }
+  }
+  @keyframes suckIn {
+    0% { transform: scale(1) rotate(0deg); opacity: 1; }
+    100% { transform: scale(0) rotate(720deg); opacity: 0; }
+  }
+`;
+
+// 스타일 태그 추가
+if (!document.querySelector('#loading-styles')) {
+  const style = document.createElement('style');
+  style.id = 'loading-styles';
+  style.textContent = loadingStyles;
+  document.head.appendChild(style);
+}
 import type { ExternalPlayer, GameCallbacks, PlayerCommand } from '../types';
 
 export const GamePage = () => {
@@ -204,8 +228,90 @@ export const GamePage = () => {
     [players, sendMessage, roomId],
   );
 
+  const [showOverlay, setShowOverlay] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowOverlay(false);
+    }, 580); // 애니메이션 완료 후 제거
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="retro-game-page" style={{ padding: '20px' }}>
+      {showOverlay && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'black',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 9999,
+            overflow: 'hidden',
+          }}
+        >
+          {/* 빨려들어가는 배경 원들 */}
+          {[...Array(8)].map((_, i) => (
+            <div
+              key={i}
+              style={{
+                position: 'absolute',
+                width: `${200 + i * 100}px`,
+                height: `${200 + i * 100}px`,
+                border: '2px solid var(--neon-cyan)',
+                borderRadius: '50%',
+                animation: `vortex ${2 + i * 0.3}s linear infinite`,
+                opacity: 0.3 - i * 0.03,
+              }}
+            />
+          ))}
+
+          <div
+            className="retro-font neon-glow-cyan neon-pulse"
+            style={{
+              fontSize: '48px',
+              textAlign: 'center',
+              marginBottom: '20px',
+              textTransform: 'uppercase',
+              letterSpacing: '4px',
+              zIndex: 10,
+              animation: 'suckIn 0.3s ease-in-out forwards',
+              animationDelay: '0.25s',
+            }}
+          >
+            LOADING
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              gap: '8px',
+              alignItems: 'center',
+              zIndex: 10,
+            }}
+          >
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                style={{
+                  width: '12px',
+                  height: '12px',
+                  backgroundColor: 'var(--neon-cyan)',
+                  borderRadius: '50%',
+                  animation: `pulse 1.5s ease-in-out ${i * 0.2}s infinite, suckIn 0.3s ease-in-out forwards`,
+                  animationDelay: `0s, ${0.25 + i * 0.05}s`,
+                  boxShadow: '0 0 10px var(--neon-cyan)',
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
       <div
         style={{
           display: 'flex',
