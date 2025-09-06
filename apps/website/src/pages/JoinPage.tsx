@@ -23,6 +23,7 @@ export const JoinPage = () => {
         alert(`게임 참가 실패: ${data.error}`);
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate, onMessage, roomId, playerName]);
 
   const handleJoinGame = () => {

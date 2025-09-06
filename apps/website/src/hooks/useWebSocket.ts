@@ -112,8 +112,8 @@ export const useWebSocket = () => {
   );
 
   const sendPlayerAction = useCallback(
-    (roomId: string, action: string) => {
-      sendMessage({ type: 'playerAction', action });
+    (roomId: string, action: string, emoji: string) => {
+      sendMessage({ type: 'playerAction', roomId, action, emoji });
     },
     [sendMessage],
   );

@@ -94,6 +94,7 @@ exports.handler = async (event) => {
             },
           );
           await Promise.all(promises);
+          return { statusCode: 200 };
         }
 
         // joinRoom으로 방 입장 처리

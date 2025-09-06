@@ -5,6 +5,7 @@ import { useWebSocket } from '../hooks/useWebSocket';
 import '../App.css';
 import { Toast } from '../components/Toast';
 import { QRCodeDisplay } from '../components/QRCodeDisplay';
+import { EmojiAnimation } from '../components/EmojiAnimation';
 import type { ExternalPlayer, GameCallbacks, PlayerCommand } from '../types';
 
 export const GamePage = () => {
@@ -28,6 +29,7 @@ export const GamePage = () => {
     selectedMapId: 'classic',
   });
   const [gameStarted] = useState(false);
+  const [cheerEmojis, setCheerEmojis] = useState<string[]>([]);
 
   const speedLevelToMs = (level: number) => 500 - (level - 1) * 50;
   const MAX_PLAYERS = 10;
@@ -61,6 +63,11 @@ export const GamePage = () => {
       }
 
       if (data.type === 'playerAction') {
+        if (data.action === 'cheer') {
+          setCheerEmojis([data.emoji]);
+          setTimeout(() => setCheerEmojis([]), 100);
+        }
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const actionMap: Record<string, any> = {
           up: { type: 'move', direction: 'up' },
@@ -455,6 +462,8 @@ export const GamePage = () => {
           onClose={() => setToast(null)}
         />
       )}
+
+      <EmojiAnimation emojis={cheerEmojis} />
     </div>
   );
 };

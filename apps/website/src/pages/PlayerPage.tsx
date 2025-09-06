@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useWebSocket } from '../hooks/useWebSocket';
+import { EmojiAnimation } from '../components/EmojiAnimation';
 
 export const PlayerPage = () => {
   const [searchParams] = useSearchParams();
@@ -13,6 +14,7 @@ export const PlayerPage = () => {
   const [gameState, setGameState] = useState<
     'waiting' | 'running' | 'eliminated' | 'finished'
   >('waiting');
+  const [cheerEmojis, setCheerEmojis] = useState<string[]>([]);
 
   useEffect(() => {
     onMessage((data) => {
@@ -20,12 +22,18 @@ export const PlayerPage = () => {
         console.log('게임 상태 업데이트:', data.state);
         setGameState(data.state ?? 'waiting');
       }
+      if (data.type === 'playerAction') {
+        if (data.action === 'cheer') {
+          setCheerEmojis([data.emoji]);
+          setTimeout(() => setCheerEmojis([]), 100);
+        }
+      }
     });
   }, [onMessage]);
 
   const sendAction = (action: string) => {
     if (!isConnected || !roomId) return;
-    sendPlayerAction(roomId, action);
+    sendPlayerAction(roomId, action, initialEmoji);
   };
 
   return (
@@ -72,73 +80,29 @@ export const PlayerPage = () => {
           <br />
           <p>방장이 게임을 시작할 때까지</p>
           <p>기다려주세요</p>
+
+          <div style={{ marginTop: '30px' }}>
+            <button
+              onClick={() => sendAction('cheer')}
+              style={{
+                padding: '15px 30px',
+                fontSize: '16px',
+                backgroundColor: '#ffc107',
+                color: 'black',
+                border: 'none',
+                borderRadius: '10px',
+                width: '100%',
+              }}
+            >
+              가즈아 {initialEmoji}
+            </button>
+          </div>
         </div>
       )}
 
       {gameState === 'running' && (
         <div>
           <h2>게임 진행중</h2>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: '15px',
-              marginTop: '30px',
-            }}
-          >
-            <button
-              onClick={() => sendAction('up')}
-              style={{
-                padding: '20px',
-                fontSize: '18px',
-                backgroundColor: '#007bff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '10px',
-              }}
-            >
-              ⬆️ 위
-            </button>
-            <button
-              onClick={() => sendAction('down')}
-              style={{
-                padding: '20px',
-                fontSize: '18px',
-                backgroundColor: '#007bff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '10px',
-              }}
-            >
-              ⬇️ 아래
-            </button>
-            <button
-              onClick={() => sendAction('left')}
-              style={{
-                padding: '20px',
-                fontSize: '18px',
-                backgroundColor: '#007bff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '10px',
-              }}
-            >
-              ⬅️ 왼쪽
-            </button>
-            <button
-              onClick={() => sendAction('right')}
-              style={{
-                padding: '20px',
-                fontSize: '18px',
-                backgroundColor: '#007bff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '10px',
-              }}
-            >
-              ➡️ 오른쪽
-            </button>
-          </div>
 
           <div style={{ marginTop: '30px' }}>
             <button
@@ -154,6 +118,23 @@ export const PlayerPage = () => {
               }}
             >
               🚀 부스터 사용
+            </button>
+          </div>
+
+          <div style={{ marginTop: '30px' }}>
+            <button
+              onClick={() => sendAction('cheer')}
+              style={{
+                padding: '15px 30px',
+                fontSize: '16px',
+                backgroundColor: '#ffc107',
+                color: 'black',
+                border: 'none',
+                borderRadius: '10px',
+                width: '100%',
+              }}
+            >
+              응원하기 {initialEmoji}
             </button>
           </div>
         </div>
@@ -172,6 +153,8 @@ export const PlayerPage = () => {
           <p>새로운 게임을 기다려주세요</p>
         </div>
       )}
+
+      <EmojiAnimation emojis={cheerEmojis} />
     </div>
   );
 };
